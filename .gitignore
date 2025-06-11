@@ -1,0 +1,39 @@
+# Node.js (for both client and server)
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+
+# Environment files
+.env
+.env.*  # e.g., .env.development, .env.local
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+*.gz
+
+# Optional: exclude coverage reports and test output
+coverage/
+jest-output/
+test-results/
+
+# Editor folders
+.vscode/
+.idea/
+*.swp
+
+# Ignore these in any subfolder (e.g., client/server)
+client/node_modules/
+server/node_modules/
+client/build/
+server/build/
+client/dist/
+server/dist/
+client/.env
+server/.env
