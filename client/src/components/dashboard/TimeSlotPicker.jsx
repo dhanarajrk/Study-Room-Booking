@@ -14,7 +14,7 @@ const isTimeSlotAvailable = (slot, selectedTable, bookings) => {
   if (isBefore(slot, now)) return false;
 
   return !bookings.some(booking => {
-    if (booking.tableId !== selectedTable._id) return false;
+    if (booking.tableId !== selectedTable._id && booking.table?.toString() !== selectedTable._id.toString()) return false;
 
     const bookingStart = new Date(booking.startTime);
     const bookingEnd = new Date(booking.endTime);
@@ -63,12 +63,14 @@ export default function TimeSlotPicker() {
     if (!selectedTable) return [];
 
     return bookings
-      .filter(booking => booking.table?.toString() === selectedTable._id.toString())
+      .filter(booking => booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString())
       .map(booking => ({
         start: addMinutes(new Date(booking.startTime), -BUFFER_MINUTES),
-        end: addMinutes(new Date(booking.endTime), BUFFER_MINUTES)
+        end: addMinutes(new Date(booking.endTime), BUFFER_MINUTES),
+        originalStart: new Date(booking.startTime),
+        originalEnd: new Date(booking.endTime)
       }))
-      .sort((a, b) => a.start.getTime() - b.start.getTime()); // Sort by start time
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
   }, [bookings, selectedTable]);
 
   const isSlotAvailable = (slot) => {
@@ -78,7 +80,7 @@ export default function TimeSlotPicker() {
     if (isBefore(slot, now)) return false;
 
     return !bookings.some(booking => {
-      if (booking.table?.toString() !== selectedTable._id.toString()) return false;
+      if (booking.tableId !== selectedTable._id && booking.table?.toString() !== selectedTable._id.toString()) return false;
 
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
@@ -95,6 +97,7 @@ export default function TimeSlotPicker() {
     const endSlots = [];
     
     // Find the next booking that would conflict with our proposed time range
+    // We need to find bookings where our potential end time would conflict with their buffer zone
     const nextConflictingBooking = tableBookingsWithBuffers.find(booking => 
       booking.start > startTime
     );
@@ -111,12 +114,13 @@ export default function TimeSlotPicker() {
       }
 
       // Double-check: ensure the entire time range (startTime to slot) is available
+      // Check if our proposed booking time range would overlap with any existing booking's buffer
       const isRangeValid = !tableBookingsWithBuffers.some(booking => {
-        // Check if any part of our proposed booking overlaps with existing bookings
+        // Check if any part of our proposed booking overlaps with existing bookings (including buffers)
         return (
-          (startTime >= booking.start && startTime < booking.end) || // start overlaps
-          (slot > booking.start && slot <= booking.end) ||           // end overlaps
-          (startTime <= booking.start && slot >= booking.end)        // fully encompasses
+          (startTime >= booking.start && startTime < booking.end) || // start overlaps with buffer
+          (slot > booking.start && slot <= booking.end) ||           // end overlaps with buffer
+          (startTime <= booking.start && slot >= booking.end)        // fully encompasses booking+buffer
         );
       });
 
@@ -167,6 +171,29 @@ export default function TimeSlotPicker() {
         </div>
       )}
 
+      {/* Debug info */}
+      {selectedTable && bookings.length > 0 && (
+        <div className="p-3 bg-blue-50 text-blue-800 rounded text-sm">
+          <strong className="block mb-2">Debug - Current Bookings for Table {selectedTable.tableNumber}:</strong>
+          <div className="max-h-24 overflow-y-auto bg-white bg-opacity-50 rounded p-2 space-y-1">
+            {bookings
+              .filter(booking => booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString())
+              .map((booking, index) => {
+                const start = new Date(booking.startTime);
+                const end = new Date(booking.endTime);
+                const bufferedStart = new Date(start.getTime() - BUFFER_MINUTES * 60000);
+                const bufferedEnd = new Date(end.getTime() + BUFFER_MINUTES * 60000);
+                return (
+                  <div key={index} className="text-xs">
+                    <div className="font-medium">Booking: {format(start, 'h:mm a')} - {format(end, 'h:mm a')}</div>
+                    <div className="text-blue-600">Buffer: {format(bufferedStart, 'h:mm a')} - {format(bufferedEnd, 'h:mm a')}</div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       <div>
         <label className="block text-sm font-medium mb-1">Start Time</label>
         <select
@@ -211,6 +238,46 @@ export default function TimeSlotPicker() {
           ))}
         </select>
       </div>
+
+      {/* Additional debug info for end times */}
+      {startTime && selectedTable && (
+        <div className="p-3 bg-green-50 text-green-800 rounded text-sm">
+          <strong>Debug - End Time Analysis for {format(startTime, 'h:mm a')}:</strong>
+          <div className="text-xs mt-1 space-y-1">
+            <div>Next booking buffer starts at: {
+              tableBookingsWithBuffers.find(booking => booking.start > startTime)
+                ? format(tableBookingsWithBuffers.find(booking => booking.start > startTime).start, 'h:mm a')
+                : 'None'
+            }</div>
+            <div>Available end slots: {getAvailableEndTimes().length}</div>
+            <div>End slots: {getAvailableEndTimes().map(slot => format(slot, 'h:mm a')).join(', ')}</div>
+            <div className="font-semibold">Booking validations:</div>
+            {availableSlots.filter(slot => {
+              const minutes = differenceInMinutes(slot, startTime);
+              return isBefore(startTime, slot) && minutes >= MIN_BOOKING_MINUTES;
+            }).slice(0, 5).map(slot => {
+              const nextBooking = tableBookingsWithBuffers.find(booking => booking.start > startTime);
+              const wouldExceedNext = nextBooking && slot > nextBooking.start;
+              const wouldOverlap = tableBookingsWithBuffers.some(booking => {
+                return (
+                  (startTime >= booking.start && startTime < booking.end) ||
+                  (slot > booking.start && slot <= booking.end) ||
+                  (startTime <= booking.start && slot >= booking.end)
+                );
+              });
+              
+              return (
+                <div key={slot.toString()} className="ml-2 text-xs">
+                  {format(slot, 'h:mm a')}: 
+                  {wouldExceedNext && ' ❌ Exceeds next booking'}
+                  {wouldOverlap && ' ❌ Overlaps with booking'}
+                  {!wouldExceedNext && !wouldOverlap && ' ✅ Valid'}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
