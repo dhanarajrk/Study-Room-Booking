@@ -5,10 +5,13 @@ import BookingPanel from '../components/dashboard/BookingPanel';
 import useBookingStore from '../store/bookingStore';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
+import AdminBookingEditor from '../components/admin/AdminBookingEditor';
 
 export default function Dashboard() {
   const { selectedDate, setDate, selectTable, fetchBookings } = useBookingStore();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { user } = useAuthStore(); // to check is logged in user role is admin/customer 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -22,7 +25,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 p-4">
-      {/* Date Picker - Controls entire table view */}
+      {/* Date Picker */}
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <label className="block text-sm font-medium mb-1">View tables for:</label>
         <DatePicker
@@ -33,17 +36,37 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Table Grid (Now shows availability for selectedDate) */}
-        <div className="lg:w-3/4">
-          <TableGrid onSelect={selectTable} />
-        </div>
+      {/* Conditional layout based on user role */}
+      {user?.role === 'admin' ? (
+        // Admin Layout (25% + 50% + 25%)
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-1/4">
+            <TableGrid onSelect={selectTable} />
+          </div>
 
-        {/* Booking Panel (Uses selectedDate implicitly) */}
-        <div className="lg:w-1/4">
-          <BookingPanel />
+          <div className="lg:w-2/4">
+            <div className="bg-white p-4 rounded-lg shadow-md min-h-[300px]">
+              <h3 className="font-bold text-lg">Admin Controls</h3>
+              <AdminBookingEditor />
+            </div>
+          </div>
+
+          <div className="lg:w-1/4">
+            <BookingPanel />
+          </div>
         </div>
-      </div>
+      ) : (
+        // Normal User Layout (75% + 25%)
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-3/4">
+            <TableGrid onSelect={selectTable} />
+          </div>
+
+          <div className="lg:w-1/4">
+            <BookingPanel />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
