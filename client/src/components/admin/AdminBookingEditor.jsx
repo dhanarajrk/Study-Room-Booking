@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import TimeSlotPicker from '../dashboard/TimeSlotPicker';
+import { updateBooking, deleteBooking } from '../../api/booking';
 
 export default function AdminBookingEditor() {
   const {
@@ -15,6 +16,8 @@ export default function AdminBookingEditor() {
     selectedTime,
     hours,
     minutes,
+    fetchBookings,
+    selectedDate
   } = useBookingStore();
 
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -29,24 +32,42 @@ export default function AdminBookingEditor() {
       booking.table?.toString() === selectedTable._id.toString()
   );
 
-  const handleSaveChanges = () => {
-    if (!selectedTime || hours === 0 && minutes === 0) {
+  const handleSaveChanges = async () => {
+    if (!selectedSlot || !selectedTime || hours === 0 && minutes === 0) {
       toast.error('Please select valid time changes');
       return;
     }
 
-    // TODO: Send updated time range to server (next step)
-    console.log('Saving changes for:', selectedSlot._id);
-    console.log('New Start:', selectedTime);
-    console.log('New End:', new Date(selectedTime.getTime() + (hours * 60 + minutes) * 60000));
+    const newEndTime = new Date(selectedTime.getTime() + (hours * 60 + minutes) * 60000);
 
-    toast.success('Changes ready to save (stub)');
+    try {
+      await updateBooking(
+        selectedSlot._id,
+        selectedTime.toISOString(),
+        newEndTime.toISOString()
+      );
+
+      toast.success('Booking updated successfully!');
+      setSelectedSlot(null);
+      fetchBookings(selectedDate); // from Zustand
+    } catch (err) {
+      console.error('Update failed:', err);
+      toast.error('Failed to update booking');
+    }
   };
 
-  const handleDeleteSlot = () => {
-    // TODO: Call delete API (next step)
-    console.log('Deleting booking with ID:', selectedSlot._id);
-    toast.success('Booking deleted (stub)');
+  const handleDeleteSlot = async () => {
+    if (!selectedSlot) return;
+
+    try {
+      await deleteBooking(selectedSlot._id);
+      toast.success('Booking deleted successfully!');
+      setSelectedSlot(null);
+      fetchBookings(selectedDate); // from Zustand
+    } catch (err) {
+      console.error('Delete failed:', err);
+      toast.error('Failed to delete booking');
+    }
   };
 
   return (

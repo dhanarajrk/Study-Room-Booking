@@ -42,3 +42,28 @@ export const getBookings = async (params) => {
     throw new Error(error.response?.data?.message || 'Failed to fetch bookings');
   }
 };
+
+//admin: UPDATE booking req:
+export const updateBooking = async (bookingId, startTime, endTime) => {
+  const token = localStorage.getItem('token');
+  const res = await axios.put(`${API_BASE_URL}/bookings/${bookingId}`, {
+    startTime,
+    endTime,
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
+//admin: DELETE booking req
+export const deleteBooking = async (bookingId) => {
+  const token = localStorage.getItem('token');
+  const res = await axios.delete(`${API_BASE_URL}/bookings/${bookingId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
