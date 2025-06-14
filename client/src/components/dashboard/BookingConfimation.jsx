@@ -33,15 +33,15 @@ export default function BookingConfirmation() {
         toast.error('Please login to book a table');
         return;
       }
-  
+
       if (!selectedTable?._id || !selectedTime) {
         toast.error('Incomplete booking information');
         return;
       }
-  
+
       const startTime = selectedTime;
       const endTime = addMinutes(addHours(selectedTime, hours), minutes);
-  
+
       await submitBooking(user._id);
       toast.success(`Table ${selectedTable.tableNumber} booked successfully!`);
       closeBookingModal();
@@ -57,7 +57,16 @@ export default function BookingConfirmation() {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <h3 className="font-bold text-lg mb-4">Confirm Booking</h3>
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="font-bold text-lg">Confirm Booking</h3>
+          <button
+            onClick={closeBookingModal}
+            className="text-gray-400 hover:text-gray-700 text-xl leading-none"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
 
         <div className="space-y-3 mb-6">
           <DetailRow label="Table" value={`T${selectedTable.tableNumber}`} />
@@ -92,7 +101,7 @@ export default function BookingConfirmation() {
                 </svg>
                 Processing...
               </span>
-            ) : 'Confirm Booking'}
+            ) : 'Proceed Booking'}
           </button>
         </div>
       </div>

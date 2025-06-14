@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import useBookingStore from '../../store/bookingStore';
-import BookingModal from './BookingModal';
+import BookingConfirmation from './BookingConfimation';
 import { format, isBefore, differenceInMinutes, addMinutes } from 'date-fns';
 
 const BUFFER_MINUTES = 30;
@@ -175,7 +175,6 @@ export default function TableGrid() {
 
   const handleTableSelect = (table) => {
     selectTable(table);
-    openBookingModal();
   };
 
   return (
@@ -189,8 +188,6 @@ export default function TableGrid() {
           />
         ))}
       </div>
-
-      {bookingModalOpen && <BookingModal />}
     </>
   );
 }

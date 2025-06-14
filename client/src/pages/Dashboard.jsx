@@ -45,7 +45,7 @@ export default function Dashboard() {
           </div>
 
           <div className="lg:w-2/4">
-            <div className="bg-white p-4 rounded-lg shadow-md min-h-[300px]">
+            <div className="bg-white p-4 rounded-lg shadow-md h-[600px] max-h-[80vh] overflow-y-auto">
               <h3 className="font-bold text-lg">Admin Controls</h3>
               <AdminBookingEditor />
             </div>
