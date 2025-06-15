@@ -43,6 +43,14 @@ export const getBookings = async (params) => {
   }
 };
 
+export const cancelBooking = async (bookingId) => {
+  const token = localStorage.getItem('token');
+  const res = await axios.delete(`${API_BASE_URL}/bookings/${bookingId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
 //admin: UPDATE booking req:
 export const updateBooking = async (bookingId, startTime, endTime) => {
   const token = localStorage.getItem('token');

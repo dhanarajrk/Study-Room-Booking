@@ -7,6 +7,7 @@ import Layout from './components/ui/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import useBookingStore from './store/bookingStore';
 import { useEffect } from 'react';
+import MyBookings from './pages/MyBookings';
 
 function App() {
 
@@ -27,7 +28,7 @@ function App() {
           <Route element={<Layout />}>        // Layout will apply for all protected pages
             <Route path="/" element={<div>Dashboard or Home</div>} />  //Home/Dashboard page
             <Route path="/dashboard" element={<Dashboard />} />
-            {/* more protected routes */}
+            <Route path="/my-bookings" element={<MyBookings />} />
           </Route>
         </Route>
       </Routes>

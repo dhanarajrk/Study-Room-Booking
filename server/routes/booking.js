@@ -70,6 +70,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+//Fetch bookings for MyBookings (for a specific user)
+router.get('/user/:userId', authenticate, async (req, res) => {
+  try {
+    const bookings = await Booking.find({ user: req.params.userId })
+      .populate('table', 'tableNumber');
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 //  Admin: Update a booking's time
 router.put('/:id', authenticate, isAdmin, async (req, res) => {
   try {
@@ -103,18 +114,43 @@ router.put('/:id', authenticate, isAdmin, async (req, res) => {
   }
 });
 
-// Admin: Delete a booking
-router.delete('/:id', authenticate, isAdmin, async (req, res) => {
+// User or Admin: Cancel a booking (soft delete)
+router.delete('/:id', authenticate, async (req, res) => {
   try {
-    const booking = await Booking.findByIdAndDelete(req.params.id);
+    const booking = await Booking.findById(req.params.id);
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    res.json({ message: 'Booking deleted successfully' });
+    // Allow user to cancel only their own booking
+    const isAdminUser = req.user.role === 'admin';
+    const isOwner = booking.user.toString() === req.user.id;
+
+    if (!isAdminUser && !isOwner) {
+      return res.status(403).json({ message: 'Not authorized to cancel this booking' });
+    }
+
+    // Prevent cancelling already-cancelled booking
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ message: 'Booking already cancelled' });
+    }
+
+    // Update cancellation details
+    booking.status = 'cancelled';
+    booking.refundStatus = 'pending';
+    booking.refundAmount = booking.totalPrice;
+
+    await booking.save();
+
+    res.json({
+      message: 'Booking cancelled successfully',
+      refundStatus: booking.refundStatus,
+      refundAmount: booking.refundAmount,
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete booking', error: err.message });
+    res.status(500).json({ message: 'Failed to cancel booking', error: err.message });
   }
 });
+
 
 export default router;
