@@ -32,6 +32,7 @@ const safeCreateDate = (year, month, date, hours, minutes = 0) => {
   }
 };
 
+
 const isTimeSlotAvailable = (slot, selectedTable, bookings) => {
   if (!selectedTable || !slot || !isValid(slot)) return false;
 
@@ -39,7 +40,10 @@ const isTimeSlotAvailable = (slot, selectedTable, bookings) => {
   if (isBefore(slot, now)) return false;
 
   return !bookings.some(booking => {
-    if (booking.tableId !== selectedTable._id && booking.table?.toString() !== selectedTable._id.toString()) return false;
+    if (
+      (booking.tableId !== selectedTable._id && booking.table?.toString() !== selectedTable._id.toString()) ||
+      booking?.status === 'cancelled' // ignore cancelled
+    ) return false;
 
     const bookingStart = new Date(booking.startTime);
     const bookingEnd = new Date(booking.endTime);
@@ -52,6 +56,7 @@ const isTimeSlotAvailable = (slot, selectedTable, bookings) => {
     return slot >= bufferedStart && slot < bufferedEnd;
   });
 };
+
 
 export default function TimeSlotPicker({ readOnly = false, isAdminView = false }) {
   const {
@@ -70,10 +75,10 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
 
   useEffect(() => {
     if (!selectedDate) return;
-    
+
     const slots = [];
     const baseDate = new Date(selectedDate);
-    
+
     // Validate base date
     if (!isValid(baseDate)) {
       console.error('Invalid selectedDate:', selectedDate);
@@ -83,38 +88,38 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
     for (let hour = 8; hour <= 23; hour++) {
       // Create 30-minute intervals
       const hourSlot = safeCreateDate(
-        baseDate.getFullYear(), 
-        baseDate.getMonth(), 
-        baseDate.getDate(), 
-        hour, 
+        baseDate.getFullYear(),
+        baseDate.getMonth(),
+        baseDate.getDate(),
+        hour,
         0
       );
-      
+
       if (hourSlot) slots.push(hourSlot);
 
       if (hour < 23) {
         const halfHourSlot = safeCreateDate(
-          baseDate.getFullYear(), 
-          baseDate.getMonth(), 
-          baseDate.getDate(), 
-          hour, 
+          baseDate.getFullYear(),
+          baseDate.getMonth(),
+          baseDate.getDate(),
+          hour,
           30
         );
-        
+
         if (halfHourSlot) slots.push(halfHourSlot);
       }
     }
 
     // Add final 23:30 slot if not already present
     const finalSlot = safeCreateDate(
-      baseDate.getFullYear(), 
-      baseDate.getMonth(), 
-      baseDate.getDate(), 
-      23, 
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate(),
+      23,
       30
     );
-    
-    if (finalSlot && !slots.some(slot => 
+
+    if (finalSlot && !slots.some(slot =>
       slot.getHours() === 23 && slot.getMinutes() === 30
     )) {
       slots.push(finalSlot);
@@ -129,14 +134,17 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
     if (!selectedTable) return [];
 
     return bookings
-      .filter(booking => booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString())
+      .filter(booking =>
+        (booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString()) &&
+        booking?.status !== 'cancelled' // exclude cancelled bookings
+      )
       .map(booking => {
         const startDate = new Date(booking.startTime);
         const endDate = new Date(booking.endTime);
-        
+
         // Only include valid bookings
         if (!isValid(startDate) || !isValid(endDate)) return null;
-        
+
         return {
           start: addMinutes(startDate, -BUFFER_MINUTES),
           end: addMinutes(endDate, BUFFER_MINUTES),
@@ -148,26 +156,6 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
       .sort((a, b) => a.start.getTime() - b.start.getTime());
   }, [bookings, selectedTable]);
 
-  const isSlotAvailable = (slot) => {
-    if (!selectedTable || !slot || !isValid(slot)) return false;
-
-    const now = new Date();
-    if (isBefore(slot, now)) return false;
-
-    return !bookings.some(booking => {
-      if (booking.tableId !== selectedTable._id && booking.table?.toString() !== selectedTable._id.toString()) return false;
-
-      const bookingStart = new Date(booking.startTime);
-      const bookingEnd = new Date(booking.endTime);
-      
-      if (!isValid(bookingStart) || !isValid(bookingEnd)) return false;
-      
-      const bufferedStart = new Date(bookingStart.getTime() - BUFFER_MINUTES * 60000);
-      const bufferedEnd = new Date(bookingEnd.getTime() + BUFFER_MINUTES * 60000);
-
-      return slot >= bufferedStart && slot < bufferedEnd;
-    });
-  };
 
   const getAvailableEndTimes = (isAdminView = false) => {
     if (!startTime || !isValid(startTime)) return [];
@@ -179,7 +167,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
       for (const slot of availableSlots) {
         // Validate slot before processing
         if (!slot || !isValid(slot)) continue;
-        
+
         const minutes = differenceInMinutes(slot, startTime);
 
         // Only check minimum duration and that it's after start time
@@ -206,7 +194,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
       for (const slot of availableSlots) {
         // Validate slot before processing
         if (!slot || !isValid(slot)) continue;
-        
+
         const minutes = differenceInMinutes(slot, startTime);
 
         if (!isBefore(startTime, slot) || minutes < MIN_BOOKING_MINUTES) continue;
@@ -310,11 +298,14 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
               <strong className="block mb-2">Debug - Current Bookings for Table {selectedTable.tableNumber}:</strong>
               <div className="max-h-24 overflow-y-auto bg-white bg-opacity-50 rounded p-2 space-y-1">
                 {bookings
-                  .filter(booking => booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString())
+                  .filter(booking =>
+                    (booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString()) &&
+                    booking.status !== 'cancelled'
+                  )
                   .map((booking, index) => {
                     const start = new Date(booking.startTime);
                     const end = new Date(booking.endTime);
-                    
+
                     if (!isValid(start) || !isValid(end)) {
                       return (
                         <div key={index} className="text-xs text-red-600">
@@ -322,10 +313,10 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
                         </div>
                       );
                     }
-                    
+
                     const bufferedStart = new Date(start.getTime() - BUFFER_MINUTES * 60000);
                     const bufferedEnd = new Date(end.getTime() + BUFFER_MINUTES * 60000);
-                    
+
                     return (
                       <div key={index} className="text-xs">
                         <div className="font-medium">
@@ -354,7 +345,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
           <option value="">Select start time</option>
           {availableSlots.map((slot, index) => {
             if (!slot || !isValid(slot)) return null;
-            
+
             const isAvailable = isTimeSlotAvailable(slot, selectedTable, bookings);
             return (
               <option
@@ -387,12 +378,12 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
                 key={`${slot.toISOString()}-${i}`}
                 value={slot.toISOString()}
                 disabled={false} // Admin can select any time slot
-                className={!slotIsValid && !isAdminView ? 'text-gray-400 bg-red-100' : 
-                          !slotIsValid && isAdminView ? 'text-orange-600 bg-orange-100' : ''}
+                className={!slotIsValid && !isAdminView ? 'text-gray-400 bg-red-100' :
+                  !slotIsValid && isAdminView ? 'text-orange-600 bg-orange-100' : ''}
               >
                 {safeFormat(slot, 'h:mm a')} {
-                  isAdminView ? 
-                    (slotIsValid ? '✅' : '⚠️ Conflicts') : 
+                  isAdminView ?
+                    (slotIsValid ? '✅' : '⚠️ Conflicts') :
                     (slotIsValid ? '✅' : '❌')
                 }
               </option>
@@ -416,7 +407,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
               </>
             )}
             <div>Available end slots: {getAvailableEndTimes(isAdminView).length}</div>
-            <div>End slots: {getAvailableEndTimes(isAdminView).map(({slot}) => safeFormat(slot, 'h:mm a')).join(', ')}</div>
+            <div>End slots: {getAvailableEndTimes(isAdminView).map(({ slot }) => safeFormat(slot, 'h:mm a')).join(', ')}</div>
             {isAdminView && (
               <div className="text-orange-600 font-medium">
                 ⚠️ Admin Mode: All time slots are selectable, including conflicting ones

@@ -18,6 +18,7 @@ router.post('/', authenticate, async (req, res) => {
     // Check for conflicts
     const conflict = await Booking.findOne({
       table,
+      status: { $ne: 'cancelled' }, // ignore cancelled bookings so that another user can book the same cancelled slot
       $or: [
         { startTime: { $lt: endTime }, endTime: { $gt: startTime } }
       ]

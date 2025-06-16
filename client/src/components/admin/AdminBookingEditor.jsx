@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import TimeSlotPicker from '../dashboard/TimeSlotPicker';
-import { updateBooking, deleteBooking } from '../../api/booking';
+import { updateBooking, deleteBooking, cancelBooking } from '../../api/booking'; // ← add cancelBooking
 
 export default function AdminBookingEditor() {
   const {
@@ -33,7 +33,7 @@ export default function AdminBookingEditor() {
   );
 
   const handleSaveChanges = async () => {
-    if (!selectedSlot || !selectedTime || hours === 0 && minutes === 0) {
+    if (!selectedSlot || !selectedTime || (hours === 0 && minutes === 0)) {
       toast.error('Please select valid time changes');
       return;
     }
@@ -49,7 +49,7 @@ export default function AdminBookingEditor() {
 
       toast.success('Booking updated successfully!');
       setSelectedSlot(null);
-      fetchBookings(selectedDate); // from Zustand
+      fetchBookings(selectedDate);
     } catch (err) {
       console.error('Update failed:', err);
       toast.error('Failed to update booking');
@@ -63,10 +63,24 @@ export default function AdminBookingEditor() {
       await deleteBooking(selectedSlot._id);
       toast.success('Booking deleted successfully!');
       setSelectedSlot(null);
-      fetchBookings(selectedDate); // from Zustand
+      fetchBookings(selectedDate);
     } catch (err) {
       console.error('Delete failed:', err);
       toast.error('Failed to delete booking');
+    }
+  };
+
+  const handleCancelSlot = async (bookingId) => {
+    const confirm = window.confirm('Are you sure you want to cancel this booking?');
+    if (!confirm) return;
+
+    try {
+      await cancelBooking(bookingId); // use admin cancel logic
+      toast.success('Booking cancelled successfully');
+      fetchBookings(selectedDate);
+    } catch (err) {
+      console.error('Cancel failed:', err);
+      toast.error('Failed to cancel booking');
     }
   };
 
@@ -87,25 +101,44 @@ export default function AdminBookingEditor() {
           return (
             <div
               key={booking._id}
-              className={`p-3 border rounded space-y-1 ${selectedSlot?._id === booking._id ? 'bg-blue-50' : 'bg-gray-50'}`}
+              className={`p-3 border rounded space-y-1 flex justify-between items-center ${selectedSlot?._id === booking._id ? 'bg-blue-50' : 'bg-gray-50'
+                }`}
             >
-              <div className="text-sm font-medium text-gray-800">
-                {format(start, 'p')} – {format(end, 'p')}
+              <div>
+                <div className="text-sm font-medium text-gray-800">
+                  {format(start, 'p')} – {format(end, 'p')}
+                </div>
+                <div className="text-xs text-gray-600">Booked by: {username}</div>
               </div>
-              <div className="text-xs text-gray-600">Booked by: {username}</div>
-              <button
-                onClick={() => {
-                  setSelectedSlot(booking);
-                  setSelectedTime(start); // load original start
-                  const mins = (end.getTime() - start.getTime()) / 60000;
-                  setHours(Math.floor(mins / 60));
-                  setMinutes(mins % 60);
-                  setTotalAmount(0); // don't show cost
-                }}
-                className="text-sm text-blue-600 underline"
-              >
-                ✏️ Edit
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={() => {
+                    setSelectedSlot(booking);
+                    setSelectedTime(start);
+                    const mins = (end.getTime() - start.getTime()) / 60000;
+                    setHours(Math.floor(mins / 60));
+                    setMinutes(mins % 60);
+                    setTotalAmount(0);
+                  }}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  ✏️ Edit
+                </button>
+                
+                {booking.status === 'cancelled' ? (
+                  <div className="text-xs text-red-600 font-semibold text-right">
+                    Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} ({booking.refundStatus})
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleCancelSlot(booking._id)}
+                    className="text-sm text-red-600 hover:underline"
+                  >
+                    🚫 Cancel Slot
+                  </button>
+                )}
+
+              </div>
             </div>
           );
         })

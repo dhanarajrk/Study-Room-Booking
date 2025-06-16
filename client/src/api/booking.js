@@ -43,6 +43,7 @@ export const getBookings = async (params) => {
   }
 };
 
+//User/Admin Cancel slot req:
 export const cancelBooking = async (bookingId) => {
   const token = localStorage.getItem('token');
   const res = await axios.delete(`${API_BASE_URL}/bookings/${bookingId}`, {
