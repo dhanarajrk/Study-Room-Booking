@@ -1,4 +1,3 @@
-// server/routes/tables.js
 import express from 'express';
 import Table from '../models/Table.js';
 

@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import authRoutes from './routes/auth.js';
 import bookingRoutes from './routes/booking.js';
 import tableRoutes from './routes/tables.js';
+import paymentRoutes from './routes/paymentroute.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/auth/bookings', bookingRoutes);
 app.use('/api/auth/tables', tableRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // MongoDB Connection
 mongoose
