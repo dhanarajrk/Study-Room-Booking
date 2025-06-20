@@ -1,5 +1,6 @@
 import express from 'express';
-import { Cashfree } from "cashfree-pg";
+import crypto from 'crypto';
+import { Cashfree, CFEnvironment } from "cashfree-pg";
 
 const router = express.Router();
 
@@ -8,24 +9,45 @@ Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
 Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
 Cashfree.XEnvironment = Cashfree.Environment.SANDBOX; //For testing = SANDBOX environment 
 
-
 function generateOrderId() {
     const uniqueId = crypto.randomUUID(); //generate UUID
-
     const orderId = uniqueId.replace(/-/g, '_').slice(0, 12); //replace - with _ and slice the length to 12
-
     return orderId;
 }
 
+ //Helper function to fetch payment status after creating an order:
+ async function getPaymentStatusFromCashfree(orderId) {
+    try {
+        // Use the static method approach consistently
+        const res = await Cashfree.PGOrderFetchPayments("2023-08-01", orderId);
+        console.log('Payment Status fetched successfully:', res.data);
 
-router.post('/create-order', async (req, res) => {  //can write any name (there is no fixed route name)
+        const payments = res.data;
 
-    const { order_amount, customer_id, customer_phone, customer_email, customer_name } = req.body; //user details from frontend that made the payment 
+        if (payments && payments.length > 0) {
+            if (payments.some(txn => txn.payment_status === 'SUCCESS')) {
+                return 'SUCCESS';
+            } else if (payments.some(txn => txn.payment_status === 'PENDING')) {
+                return 'PENDING';
+            } else {
+                return 'FAILED';
+            }
+        } else {
+            // No payments found yet (order just created)
+            return 'NOT_ATTEMPTED';
+        }
+    } catch (err) {
+        console.error('❌ Error fetching payment status:', err.response?.data || err.message);
+        return 'UNKNOWN';
+    }
+}
 
-    const orderId = generateOrderId(); //Generate a unique Order ID to create new order
+//Create-Order using cashfree and send the response details to frontend
+router.post('/create-order', async (req, res) => {
+    const { order_amount, customer_id, customer_phone, customer_email, customer_name } = req.body;
+    const orderId = generateOrderId();
 
     try {
-
         var request = {
             "order_amount": order_amount,
             "order_currency": "INR",
@@ -41,18 +63,34 @@ router.post('/create-order', async (req, res) => {  //can write any name (there 
             }
         };
 
-        Cashfree.PGCreateOrder("2023-08-01", request).then((response) => {
-            console.log('Order Created successfully:', response.data)
-            res.json(response.data);
-        })
-        .catch((error) => {
-            console.error('Error:', error.response.data.message);
-        });
+        const createOrderResponse = await Cashfree.PGCreateOrder("2023-08-01", request);
+        console.log('Order Created successfully:', createOrderResponse.data);
 
+        res.json(createOrderResponse.data);
     }
     catch (error) {
-        console.log(error);
+        console.error('❌ Order creation error:', error.response?.data || error.message);
+        res.status(500).json({ message: "Order creation or status fetch failed" });
     }
-})
+});
+
+
+//Seperate endpoint to fetch payment status
+router.post('/check-payment-status/:orderId', async (req, res) => {
+
+    const { orderId } = req.params; // I use req.params since i want extract orderId from the url's :orderId
+
+    try{
+        const paymentStatus = await getPaymentStatusFromCashfree(orderId);
+        console.log("paymentStatus: ", paymentStatus);
+
+        res.json({paymentStatus}); //send as object for better usability, frontend will receive like this { paymentStatus: "SUCCESS" }
+    }
+    catch(error){
+        console.error('❌ Error checking payment status:', error.message);
+        res.status(500).json({ message: "Failed to fetch payment status" });
+    }
+
+});
 
 export default router;

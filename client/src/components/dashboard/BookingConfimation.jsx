@@ -138,8 +138,8 @@ export default function BookingConfirmation() {
           <PaymentButton
             user={user}
             totalAmount={totalAmount}
-            onBookingSuccess={async () => {
-              await submitBooking(user._id);
+            onBookingSuccess={async (payment) => {  //payment details are passed from PaymentButton.jsx response.data
+              await submitBooking(user._id, payment);
               toast.success(`Table ${selectedTable.tableNumber} booked successfully!`);
               closeBookingModal();
             }}

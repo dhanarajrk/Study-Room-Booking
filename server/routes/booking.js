@@ -8,7 +8,9 @@ const router = express.Router();
 // Create a new booking (user or admin)
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { table, user, startTime, endTime } = req.body;
+    const { table, user, startTime, endTime, payment } = req.body;
+
+    console.log("📦 Full request body:", req.body);
 
     const tableDoc = await Table.findById(table);
     if (!tableDoc) {
@@ -43,7 +45,14 @@ router.post('/', authenticate, async (req, res) => {
       startTime,
       endTime,
       hours: durationHours,
-      totalPrice: parseFloat(totalPrice.toFixed(2))
+      totalPrice: parseFloat(totalPrice.toFixed(2)),
+      ...(payment && {
+        payment: {
+          orderId: payment.orderId,
+          sessionId: payment.sessionId,
+          status: payment.status
+        }
+      })
     });
 
     await booking.save();

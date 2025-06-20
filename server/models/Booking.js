@@ -9,7 +9,13 @@ const bookingSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true, min: 0 },
   status: { type: String, enum: ['confirmed', 'cancelled'], default: 'confirmed' },
   refundStatus: { type: String, enum: ['none', 'pending', 'processed'], default: 'none' },
-  refundAmount: { type: Number, default: 0 }
+  refundAmount: { type: Number, default: 0 },
+
+  payment: {
+    orderId: { type: String },           
+    sessionId: { type: String },    
+    status: { type: String, default: 'PENDING' } 
+  }
 }, { timestamps: true });
 
 //Add index for efficient conflict checking (1 represents sorting in ascending for efficient search)

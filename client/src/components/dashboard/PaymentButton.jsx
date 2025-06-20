@@ -44,14 +44,25 @@ export default function PaymentButton({ user, totalAmount, onBookingSuccess }) {
         return;
       }
 
+      //console.log("PaymentButton received create-order data:", data);
+
       //checkoutOptions format as given in cashfree offical docs
       const checkoutOptions = {
         paymentSessionId,
         redirectTarget: '_modal'
       };
       await cashfree.checkout(checkoutOptions);
+
+      //After successful checkout, fetch payment status for verification using orderId:
+      const paymentStatusResponse = await axios.post(`http://localhost:5000/api/payments/check-payment-status/${data.order_id}`);
+      console.log("Payment status response received after checking:", paymentStatusResponse);
+
+      const payment_status = paymentStatusResponse.data.paymentStatus; //extract the status string and pass in onBookingSuccess() status prop below
+
       toast.success('Payment successful!');
-      if (onBookingSuccess) onBookingSuccess();
+      if (onBookingSuccess){
+        onBookingSuccess({orderId: data.order_id, sessionId: data.payment_session_id, status: payment_status});
+      }                  //these details are passed as (payment) in <PaymentButton onBookingSuccess={async (payment) => {await submitBooking(user._id, payment);} />
 
     } catch (error) {
       console.error('❌ Payment Error:', error);
