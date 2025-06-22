@@ -8,8 +8,9 @@ const bookingSchema = new mongoose.Schema({
   hours: { type: Number, required: true },
   totalPrice: { type: Number, required: true, min: 0 },
   status: { type: String, enum: ['confirmed', 'cancelled'], default: 'confirmed' },
-  refundStatus: { type: String, enum: ['none', 'pending', 'processed'], default: 'none' },
+  refundStatus: { type: String, default: 'none' },
   refundAmount: { type: Number, default: 0 },
+  refundId: { type: String, default: null },
 
   payment: {
     orderId: { type: String },           

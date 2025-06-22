@@ -1,6 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { Cashfree, CFEnvironment } from "cashfree-pg";
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -15,8 +16,8 @@ function generateOrderId() {
     return orderId;
 }
 
- //Helper function to fetch payment status after creating an order:
- async function getPaymentStatusFromCashfree(orderId) {
+//Helper function to fetch payment status after creating an order:
+async function getPaymentStatusFromCashfree(orderId) {
     try {
         // Use the static method approach consistently
         const res = await Cashfree.PGOrderFetchPayments("2023-08-01", orderId);
@@ -80,17 +81,18 @@ router.post('/check-payment-status/:orderId', async (req, res) => {
 
     const { orderId } = req.params; // I use req.params since i want extract orderId from the url's :orderId
 
-    try{
+    try {
         const paymentStatus = await getPaymentStatusFromCashfree(orderId);
         console.log("paymentStatus: ", paymentStatus);
 
-        res.json({paymentStatus}); //send as object for better usability, frontend will receive like this { paymentStatus: "SUCCESS" }
+        res.json({ paymentStatus }); //send as object for better usability, frontend will receive like this { paymentStatus: "SUCCESS" }
     }
-    catch(error){
+    catch (error) {
         console.error('❌ Error checking payment status:', error.message);
         res.status(500).json({ message: "Failed to fetch payment status" });
     }
 
 });
+
 
 export default router;

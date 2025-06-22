@@ -49,11 +49,12 @@ export default function PaymentButton({ user, totalAmount, onBookingSuccess }) {
       //checkoutOptions format as given in cashfree offical docs
       const checkoutOptions = {
         paymentSessionId,
-        redirectTarget: '_modal'
+        redirectTarget: '_modal' // '_modal'=pop up checkout  or '_self' = new page checkout
       };
       await cashfree.checkout(checkoutOptions);
 
-      //After successful checkout, fetch payment status for verification using orderId:
+      //After cashfree.checkout we can't actually know if the Create-order is done successfully or not
+      //So, fetch payment status using Cashfree.PGOrderFetchPayments("2023-08-01", orderId) in backend for verification using orderId:
       const paymentStatusResponse = await axios.post(`http://localhost:5000/api/payments/check-payment-status/${data.order_id}`);
       console.log("Payment status response received after checking:", paymentStatusResponse);
 

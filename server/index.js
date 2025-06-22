@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js';
 import bookingRoutes from './routes/booking.js';
 import tableRoutes from './routes/tables.js';
 import paymentRoutes from './routes/paymentroute.js';
+import webhookRoutes from './routes/webhookRoutes.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth/bookings', bookingRoutes);
 app.use('/api/auth/tables', tableRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // MongoDB Connection
 mongoose
