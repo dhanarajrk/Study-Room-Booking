@@ -15,11 +15,13 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app); //since we use web socket
 
-// Socket.io setup
-const io = new Server(httpServer, {
-    cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:3000",
-    },
+// Socket.io setup (i use global.io so that io can be imported in any files)
+global.io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL, //Vite port
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
 //Middleware
@@ -28,7 +30,7 @@ app.use(express.json());
 
 //import routes
 app.use('/api/auth', authRoutes);
-app.use('/api/auth/bookings', bookingRoutes);
+app.use('/api/auth/bookings', bookingRoutes);  
 app.use('/api/auth/tables', tableRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/webhooks', webhookRoutes);
@@ -44,9 +46,9 @@ app.get("/", (req, res) => res.send("Library Booking API"));
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
-    console.log("🔌 New client connected:", socket.id);
-    socket.on("disconnect", () => console.log("❌ Client disconnected:", socket.id));
-  });
+  console.log("🔌 New client connected:", socket.id);
+  socket.on("disconnect", () => console.log("❌ Client disconnected:", socket.id));
+});
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

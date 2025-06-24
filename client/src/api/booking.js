@@ -77,3 +77,15 @@ export const deleteBooking = async (bookingId) => {
   });
   return res.data;
 };
+
+
+//Manual Refetch Refund Status req func
+export const fetchRefundStatus = async (bookingId) => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`${API_BASE_URL}/bookings/refetch-refund/${bookingId}`,{
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};

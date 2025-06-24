@@ -57,6 +57,11 @@ router.post('/', authenticate, async (req, res) => {
     });
 
     await booking.save();
+    // Emit event after saving
+    // Populate the user field before emitting so that it includes username so that it can take immediatechanges for 'Booked by: {usernmae}' in Admin Editing section. Otherwise it will show 'Booked by: Unkown' if we send only user ObjectId
+    const populatedBooking = await Booking.findById(booking._id).populate('user', 'username');
+    global.io.emit('booking:create', populatedBooking); 
+
     res.status(201).json(booking);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -119,6 +124,8 @@ router.put('/:id', authenticate, isAdmin, async (req, res) => {
     booking.totalPrice = parseFloat(totalPrice.toFixed(2));
 
     await booking.save();
+    // Emit real-time event for edit booking update by admin
+    global.io.emit('booking:update', booking);
     res.json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update booking', error: err.message });
@@ -157,6 +164,14 @@ router.delete('/:id', authenticate, async (req, res) => {
 
     await booking.save();
 
+    // Emit real-time event for cancellation Before Refund Status API call so that the cancelled table will get availabe in realtime without waiting for refund_status so that other users can book it.
+    console.log("🔔 Emitting booking:cancel for:", booking._id);
+    global.io.emit('booking:cancel', {
+      bookingId: booking._id,
+      status: booking.status,
+      tableId: booking.table,
+    });
+
     //TRIGGER Create-Refund API call: (I reffered to their offical Docs)
     const createRefundResponse = await axios.post(
       `https://sandbox.cashfree.com/pg/orders/${booking.payment.orderId}/refunds`,
@@ -179,7 +194,7 @@ router.delete('/:id', authenticate, async (req, res) => {
     booking.refundStatus = createRefundResponse.data.refund_status; //(not a soft update, this is accurate update after create refund API response)
     await booking.save();
 
-
+      /*
     //TRIGGER GET Refund Status for refund status verification (to fetch verified refund status)
     //This is useful only for Manual Refund status checking.
     //Note: Since we create refund_speed: 'STANDARD' ,we may not get refund status since it will take 1-2hrs to reflect the accurate refund status.
@@ -201,6 +216,7 @@ router.delete('/:id', authenticate, async (req, res) => {
     booking.refundStatus = refundStatusResponse.data.refund_status; //reupdate database refundStatus
     await booking.save();
     console.log('✅ booking.refundStatus saved as:', booking.refundStatus);
+    */
 
     //This res.json is optional. I actually send this to frontend for debugging purpose (but not actually implement/use these data in frontend)
     res.json({
@@ -215,6 +231,39 @@ router.delete('/:id', authenticate, async (req, res) => {
     res.status(500).json({ message: 'Failed to cancel booking', error: err.message });
   }
 });
+
+
+//Manual Trigger Refund status check when  Refetch Refund button in slicked in frontend
+router.get('/refetch-refund/:bookingId', authenticate, async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    const refundStatusResponse = await axios.get(
+      `https://sandbox.cashfree.com/pg/orders/${booking.payment.orderId}/refunds/${booking.refundId}`,
+      {
+        headers: {
+          'x-api-version': '2023-08-01',
+          'x-client-id': process.env.CASHFREE_CLIENT_ID,
+          'x-client-secret': process.env.CASHFREE_CLIENT_SECRET,
+        },
+      }
+    );
+
+    booking.refundStatus = refundStatusResponse.data.refund_status; // Update refund status
+    await booking.save();
+
+    console.log('✅ booking.refundStatus saved as:', booking.refundStatus);
+    res.json({ refundStatus: booking.refundStatus });
+  } catch (err) {
+    console.error('Error fetching refund status:', err.message);
+    res.status(500).json({ message: 'Failed to fetch refund status' });
+  }
+});
+
 
 
 export default router;

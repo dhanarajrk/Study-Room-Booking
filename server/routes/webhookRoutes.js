@@ -38,6 +38,12 @@ router.post('/cashfree/webhook', express.json({ type: 'application/json' }), asy
                 booking.refundStatus = refund_status;
                 await booking.save();
                 console.log(`✅ Updated booking ${booking._id} to refundStatus: ${refund_status}`);
+                
+                global.io.emit('refund:update', {
+                    bookingId: booking._id,
+                    refundStatus: refund_status,
+                });
+            
             } else {
                 console.warn(`⚠️ Booking not found for order: ${order_id}, refund: ${refund_id}`);
             }

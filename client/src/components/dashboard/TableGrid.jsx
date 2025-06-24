@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import useBookingStore from '../../store/bookingStore';
 import { format, isBefore, differenceInMinutes, addMinutes } from 'date-fns';
+import socket from '../../socket/socket.js';
+import useAuthStore from '../../store/authStore.js';
 
 const BUFFER_MINUTES = 30;
 const MIN_BOOKING_MINUTES = 30;
 
 const TableIcon = ({ table, onSelect }) => {
   const { bookings, selectedDate } = useBookingStore();
+  const { user } = useAuthStore();
+
   const now = new Date();
 
   const tableBookings = bookings.filter(
@@ -41,13 +45,22 @@ const TableIcon = ({ table, onSelect }) => {
     reserved: 'bg-blue-100 border-blue-300 cursor-pointer relative',
     available: 'bg-green-100 border-green-300 hover:bg-green-200 cursor-pointer',
   };
+  
+  //console.log("🔄 Rendering TableIcon for table:", table._id, "Status:", status); 
 
-  return (
+  
+   // Allow admins to select "occupied" tables
+   const isAdmin = user?.role === 'admin';
+   const isSelectable = isAdmin || status !== 'occupied';
+
+   return (
     <div
-      onClick={() => status !== 'occupied' && onSelect(table)}
+      onClick={() => isSelectable && onSelect(table)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`p-3 rounded-lg border ${statusClasses[status]}`}
+      className={`p-3 rounded-lg border ${statusClasses[status]} ${
+        isSelectable ? 'cursor-pointer' : 'cursor-not-allowed'
+      }`}
     >
       <div className="font-bold">T{table.tableNumber}</div>
 
@@ -82,6 +95,7 @@ const TableIcon = ({ table, onSelect }) => {
     </div>
   );
 };
+
 
 function checkIfTableHasAvailableSlots(table, allBookings, selectedDate) {
   const now = new Date();
@@ -152,6 +166,9 @@ const TableGrid = ({ onSelect }) => {
     selectedDate,
     fetchTables,
     fetchBookings,
+    updateBookingCancelStatus,
+    updateBookingCreate,
+    updateEditedBooking,
     selectTable,
     selectedTable,
   } = useBookingStore();
@@ -162,6 +179,56 @@ const TableGrid = ({ onSelect }) => {
       fetchBookings(selectedDate);
     }
   }, [selectedDate]);
+
+  //**Add real-time updates using Socket.IO : 
+
+  // Listen for booking creation
+  useEffect(() => {
+    socket.on('booking:create', (newBooking) => {
+      console.log("📥 Received booking:create event:", newBooking);
+  
+      // Add the new booking to the state
+      updateBookingCreate(newBooking);
+  
+      // Optionally refetch tables if needed
+      fetchTables();
+    });
+  
+    return () => {
+      socket.off('booking:create'); // Clean up listener
+    };
+  }, [updateBookingCreate, fetchTables]);
+  
+
+  // Listen for booking cancellation
+  useEffect(() => {
+    socket.on('booking:cancel', (cancelledBooking) => {
+      console.log("📥 Received booking:cancel event:", cancelledBooking);
+      updateBookingCancelStatus(cancelledBooking); // Update the booking in the store
+      fetchTables(); // Ensure table availability updates
+    });
+
+    return () => {
+      socket.off('booking:cancel'); // Clean up socket listeners on unmount
+    };
+  }, [updateBookingCancelStatus, fetchTables]);
+
+  // Listen for booking updates emmited by admin edit booking
+  useEffect(() => {
+    
+    socket.on('booking:update', (updatedBooking) => {
+      console.log("📥 Received booking:update event:", updatedBooking);
+  
+      // Update the edited booking in the state
+      updateEditedBooking(updatedBooking);
+      fetchTables();
+    });
+  
+    return () => {
+      socket.off('booking:update'); // Clean up listener
+    };
+  }, [updateEditedBooking, fetchTables]);
+  
 
   const getTableStatus = (tableId) => {
     const table = tables.find((t) => t._id === tableId);

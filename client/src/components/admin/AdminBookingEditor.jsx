@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import TimeSlotPicker from '../dashboard/TimeSlotPicker';
 import { updateBooking, deleteBooking, cancelBooking } from '../../api/booking'; // ← add cancelBooking
+import { fetchRefundStatus } from '../../api/booking.js';
 
 export default function AdminBookingEditor() {
   const {
@@ -17,7 +18,7 @@ export default function AdminBookingEditor() {
     hours,
     minutes,
     fetchBookings,
-    selectedDate
+    selectedDate,
   } = useBookingStore();
 
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -84,12 +85,24 @@ export default function AdminBookingEditor() {
     }
   };
 
+  const handleRefreshRefundStatus = async (bookingId) => {
+    try {
+      const response = await fetchRefundStatus(bookingId);
+      toast.success(`Refund status refreshed: ${response.refundStatus}`);
+      // Optionally refetch bookings to update the UI
+      fetchBookings(selectedDate);
+    } catch (err) {
+      toast.error('Failed to refresh refund status');
+      console.error('Refund status refresh failed:', err.message);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h4 className="font-semibold text-lg mb-2">
         Bookings for Table {selectedTable.tableNumber}
       </h4>
-
+  
       {tableBookings.length === 0 ? (
         <div className="text-sm text-gray-500">No bookings found for this table.</div>
       ) : (
@@ -97,12 +110,13 @@ export default function AdminBookingEditor() {
           const start = new Date(booking.startTime);
           const end = new Date(booking.endTime);
           const username = booking.user?.username || 'Unknown';
-
+  
           return (
             <div
               key={booking._id}
-              className={`p-3 border rounded space-y-1 flex justify-between items-center ${selectedSlot?._id === booking._id ? 'bg-blue-50' : 'bg-gray-50'
-                }`}
+              className={`p-3 border rounded space-y-1 flex justify-between items-center ${
+                selectedSlot?._id === booking._id ? 'bg-blue-50' : 'bg-gray-50'
+              }`}
             >
               <div>
                 <div className="text-sm font-medium text-gray-800">
@@ -124,10 +138,26 @@ export default function AdminBookingEditor() {
                 >
                   ✏️ Edit
                 </button>
-                
+  
                 {booking.status === 'cancelled' ? (
                   <div className="text-xs text-red-600 font-semibold text-right">
-                    Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} ({booking.refundStatus})
+                    Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
+                    <span
+                      className={
+                        booking.refundStatus === 'SUCCESS'
+                          ? 'text-green-500'
+                          : 'text-red-600'
+                      }
+                    >
+                      {booking.refundStatus}
+                    </span>
+                    )
+                    <button
+                      onClick={() => handleRefreshRefundStatus(booking._id)}
+                      className="ml-2 text-blue-600 hover:underline text-xs"
+                    >
+                      Refresh Refund Status
+                    </button>
                   </div>
                 ) : (
                   <button
@@ -137,13 +167,12 @@ export default function AdminBookingEditor() {
                     🚫 Cancel Slot
                   </button>
                 )}
-
               </div>
             </div>
           );
         })
       )}
-
+  
       {selectedSlot && (
         <div className="space-y-2 pt-4 border-t">
           <h4 className="font-medium text-sm">Editing Slot</h4>
@@ -166,4 +195,5 @@ export default function AdminBookingEditor() {
       )}
     </div>
   );
+  
 }

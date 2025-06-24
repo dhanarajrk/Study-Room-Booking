@@ -171,6 +171,41 @@ const useBookingStore = create((set, get) => ({
     }
   },
 
+  //Socket IO Part Realtime update functions:
+
+  //update cancelled booking status in real-time after a user cancelled his booking, it will be take immediate effect to other user using websocket
+  updateBookingCancelStatus: (updatedBooking) => {
+    console.log("🔄 Updating booking:", updatedBooking);
+    set((state) => ({
+      bookings: state.bookings.map((booking) =>
+        booking._id === updatedBooking.bookingId // Match by booking ID
+          ? { ...booking, status: updatedBooking.status } // Update the status
+          : booking
+      ),
+    }));
+  },
+
+  //Re render with new booking in realtime
+  updateBookingCreate: (newBooking) => {
+    console.log("🔄 Adding new booking:", newBooking);
+    set((state) => ({
+      bookings: [...state.bookings, newBooking], // Append the new booking to the list
+    }));
+  },
+
+  //Re render when admin edited a booking slot
+  updateEditedBooking: (updatedBooking) => {
+    console.log("🔄 Updating booking:", updatedBooking);
+    set((state) => ({
+      bookings: state.bookings.map((booking) =>
+        booking._id === updatedBooking._id
+          ? { ...booking, ...updatedBooking } // Merge the updated booking
+          : booking
+      ),
+    }));
+  },
+  
+
 }));
 
 export default useBookingStore;

@@ -3,6 +3,7 @@ import { format, isAfter } from 'date-fns';
 import useBookingStore from '../store/bookingStore';
 import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
+import { fetchRefundStatus } from '../api/booking.js';
 
 const MyBookings = () => {
   const { user } = useAuthStore();
@@ -23,6 +24,18 @@ const MyBookings = () => {
       upcomingRefs.current[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [myBookings]);
+
+  const handleRefreshRefundStatus = async (bookingId) => {
+    try {
+      const response = await fetchRefundStatus(bookingId);
+      toast.success(`Refund status refreshed: ${response.refundStatus}`);
+      // Optionally, refresh bookings to reflect the updated refund status
+      fetchMyBookings(user._id);
+    } catch (err) {
+      toast.error('Failed to refresh refund status');
+      console.error('Refund status refresh failed:', err.message);
+    }
+  };
 
   const handleCancel = async (bookingId) => {
     const confirm = window.confirm('Are you sure you want to cancel this booking?');
@@ -58,11 +71,10 @@ const MyBookings = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1 rounded-full text-sm capitalize border transition ${
-              activeTab === tab
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
-            }`}
+            className={`px-4 py-1 rounded-full text-sm capitalize border transition ${activeTab === tab
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+              }`}
           >
             {tab}
           </button>
@@ -79,13 +91,12 @@ const MyBookings = () => {
             <div
               key={booking._id}
               ref={(el) => (upcomingRefs.current[index] = el)}
-              className={`p-4 rounded shadow border space-y-1 transition ${
-                isCancelled
-                  ? 'bg-red-100 border-red-300 text-red-700'
-                  : isUpcoming
+              className={`p-4 rounded shadow border space-y-1 transition ${isCancelled
+                ? 'bg-red-100 border-red-300 text-red-700'
+                : isUpcoming
                   ? 'bg-green-50 border-green-400'
                   : 'bg-gray-100 border-gray-300'
-              }`}
+                }`}
             >
               <div className="flex justify-between items-center mb-1">
                 <div className="font-semibold">
@@ -112,10 +123,21 @@ const MyBookings = () => {
               </div>
 
               {isCancelled && (
-                <div className="text-xs text-red-600 font-medium mt-1">
-                  Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} ({booking.refundStatus})
+                <div className="text-xs font-medium mt-1 text-red-600">
+                  Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
+                  <span className={booking.refundStatus === 'SUCCESS' ? 'text-green-500' : 'text-red-600'}>
+                    {booking.refundStatus}
+                  </span>
+                  )
+                  <button
+                    onClick={() => handleRefreshRefundStatus(booking._id)}
+                    className="ml-2 text-blue-600 hover:underline text-xs"
+                  >
+                    Refresh Refund Status
+                  </button>
                 </div>
               )}
+
             </div>
           );
         })}
