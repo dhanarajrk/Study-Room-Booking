@@ -29,7 +29,7 @@ export default function PaymentButton({ user, totalAmount, onBookingSuccess }) {
     }
 
     try {
-        //send these user details to paymentroute.js in backend and store response in {data}
+      //send these user details to paymentroute.js in backend and store response in {data}
       const { data } = await axios.post('http://localhost:5000/api/payments/create-order', {
         order_amount: totalAmount,
         customer_id: user.email.replace(/[^a-zA-Z0-9_-]/g, '_'),
@@ -60,10 +60,14 @@ export default function PaymentButton({ user, totalAmount, onBookingSuccess }) {
 
       const payment_status = paymentStatusResponse.data.paymentStatus; //extract the status string and pass in onBookingSuccess() status prop below
 
-      toast.success('Payment successful!');
-      if (onBookingSuccess){
-        onBookingSuccess({orderId: data.order_id, sessionId: data.payment_session_id, status: payment_status});
-      }                  //these details are passed as (payment) in <PaymentButton onBookingSuccess={async (payment) => {await submitBooking(user._id, payment);} />
+      if (payment_status === 'SUCCESS') {
+        toast.success('Payment successful!');
+        if (onBookingSuccess) {
+          onBookingSuccess({ orderId: data.order_id, sessionId: data.payment_session_id, status: payment_status });
+        }                  //these details are passed as (payment) in <PaymentButton onBookingSuccess={async (payment) => {await submitBooking(user._id, payment);} />
+      } else {
+        toast.error('Booking failed!');
+      }
 
     } catch (error) {
       console.error('❌ Payment Error:', error);

@@ -42,7 +42,7 @@ mongoose
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Routes (will be added in later steps)
-app.get("/", (req, res) => res.send("Library Booking API"));
+app.get("/", (req, res) => res.send("Study Table Booking API"));
 
 // Socket.io connection handling
 io.on("connection", (socket) => {

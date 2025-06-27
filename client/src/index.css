@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+@layer base {
+
+    /* Light theme (default) */
+    :root {
+        --bg-dark: hsl(224 0% 90%);
+        --bg: hsl(224 0% 95%);
+        --bg-light: hsl(224 100% 100%);
+        --text: hsl(224 0% 4%);
+        --text-muted: hsl(224 0% 28%);
+        --highlight: hsl(224 0% 80%);
+        --border: hsl(224 0% 50%);
+        --border-muted: hsl(224 0% 62%);
+        --primary: hsl(357 44% 32%);
+        --secondary: hsl(183 100% 9%);
+        --danger: hsl(9 21% 41%);
+        --warning: hsl(52 23% 34%);
+        --success: hsl(147 19% 36%);
+        --info: hsl(217 22% 41%);
+    }
+
+    /* Dark theme */
+    .dark {
+        --bg-dark: hsl(224 0% 1%);
+        --bg: hsl(224 0% 4%);
+        --bg-light: hsl(224 0% 9%);
+        --text: hsl(224 0% 95%);
+        --text-muted: hsl(224 0% 69%);
+        --highlight: hsl(224 0% 39%);
+        --border: hsl(224 0% 28%);
+        --border-muted: hsl(224 0% 18%);
+        --primary: hsl(0 66% 75%);
+        --secondary: hsl(183 52% 57%);
+        --danger: hsl(9 26% 64%);
+        --warning: hsl(52 19% 57%);
+        --success: hsl(146 17% 59%);
+        --info: hsl(217 28% 65%);
+    }
+}
+

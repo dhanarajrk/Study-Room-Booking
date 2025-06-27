@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import ThemeToggleBtn from '../../components/ui/ThemeToggleBtn';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -40,6 +41,8 @@ const LoginPage = () => {
     }
   };
 
+  /*
+  //My First Normal Theme 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
@@ -151,6 +154,129 @@ const LoginPage = () => {
       </div>
     </div>
   );
+  */
+
+
+  //Theme toggle implemented Theme
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-[var(--bg-light)] p-8 rounded-lg shadow-md">
+
+      <div className="flex justify-end">
+        <ThemeToggleBtn />
+      </div>
+        
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-[var(--text)]">
+            Sign in to your account
+          </h2>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            Or{' '}
+            <Link
+              to="/register"
+              className="font-medium text-[var(--primary)] hover:opacity-80"
+            >
+              register a new account
+            </Link>
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-[var(--text)]">
+                Email address
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`block w-full px-3 py-2 border ${
+                    errors.email ? 'border-red-300' : 'border-[var(--border)]'
+                  } rounded-md shadow-sm placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm bg-[var(--bg-light)] text-[var(--text)]`}
+                />
+                {errors.email && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                  </div>
+                )}
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--text)]">
+                Password
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`block w-full px-3 py-2 border ${
+                    errors.password ? 'border-red-300' : 'border-[var(--border)]'
+                  } rounded-md shadow-sm placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm bg-[var(--bg-light)] text-[var(--text)]`}
+                />
+                {errors.password && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                  </div>
+                )}
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-[var(--primary)] focus:ring-[var(--primary)] border-[var(--border)] rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-[var(--text)]">
+                Remember me
+              </label>
+            </div>
+
+            <div className="text-sm">
+              <Link
+                to="/forgot-password"
+                className="font-medium text-[var(--primary)] hover:opacity-80"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                loading ? 'bg-gray-400' : 'bg-[var(--primary)] hover:opacity-90'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]`}
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+  
 };
 
 export default LoginPage;

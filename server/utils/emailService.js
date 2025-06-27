@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   export const sendOTPEmail = async (email, otp) => {
     try {
       await transporter.sendMail({
-        from: `"Library Booking" <${process.env.EMAIL_USER}>`,
+        from: `"Study Table Booking" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: 'Verify Your Email',
         html: `<p>Your OTP for registration is: <strong>${otp}</strong></p>`,

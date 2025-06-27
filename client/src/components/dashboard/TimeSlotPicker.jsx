@@ -282,21 +282,185 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
     }
   };
 
+  // //Normal theme:
+  // return (
+  //   <div className="space-y-4">
+  //     {!selectedTable && (
+  //       <div className="p-3 bg-yellow-50 text-yellow-800 rounded text-sm">
+  //         Please select a table to book time slots
+  //       </div>
+  //     )}
+
+  //     {/* Debug info */}
+  //     {!readOnly && (
+  //       <>
+  //         {selectedTable && bookings.length > 0 && (
+  //           <div className="p-3 bg-blue-50 text-blue-800 rounded text-sm">
+  //             <strong className="block mb-2">Debug - Current Bookings for Table {selectedTable.tableNumber}:</strong>
+  //             <div className="max-h-24 overflow-y-auto bg-white bg-opacity-50 rounded p-2 space-y-1">
+  //               {bookings
+  //                 .filter(booking =>
+  //                   (booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString()) &&
+  //                   booking.status !== 'cancelled'
+  //                 )
+  //                 .map((booking, index) => {
+  //                   const start = new Date(booking.startTime);
+  //                   const end = new Date(booking.endTime);
+
+  //                   if (!isValid(start) || !isValid(end)) {
+  //                     return (
+  //                       <div key={index} className="text-xs text-red-600">
+  //                         Invalid booking data
+  //                       </div>
+  //                     );
+  //                   }
+
+  //                   const bufferedStart = new Date(start.getTime() - BUFFER_MINUTES * 60000);
+  //                   const bufferedEnd = new Date(end.getTime() + BUFFER_MINUTES * 60000);
+
+  //                   return (
+  //                     <div key={index} className="text-xs">
+  //                       <div className="font-medium">
+  //                         Booking: {safeFormat(start, 'h:mm a')} - {safeFormat(end, 'h:mm a')}
+  //                       </div>
+  //                       <div className="text-blue-600">
+  //                         Buffer: {safeFormat(bufferedStart, 'h:mm a')} - {safeFormat(bufferedEnd, 'h:mm a')}
+  //                       </div>
+  //                     </div>
+  //                   );
+  //                 })}
+  //             </div>
+  //           </div>
+  //         )}
+  //       </>
+  //     )}
+
+  //     <div>
+  //       <label className="block text-sm font-medium mb-1">Start Time</label>
+  //       <select
+  //         value={startTime && isValid(startTime) ? startTime.toISOString() : ''}
+  //         onChange={handleStartTimeChange}
+  //         disabled={!selectedTable || readOnly}
+  //         className={`w-full p-2 border rounded ${!selectedTable ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+  //       >
+  //         <option value="">Select start time</option>
+  //         {availableSlots.map((slot, index) => {
+  //           if (!slot || !isValid(slot)) return null;
+
+  //           const isAvailable = isTimeSlotAvailable(slot, selectedTable, bookings);
+  //           return (
+  //             <option
+  //               key={`${slot.toISOString()}-${index}`}
+  //               value={slot.toISOString()}
+  //               disabled={!isAvailable && !isAdminView}
+  //               className={!isAvailable ? 'text-gray-400 bg-red-100' : ''}
+  //             >
+  //               {safeFormat(slot, 'h:mm a')} {!isAvailable ? '❌ Booked' : '✅'}
+  //             </option>
+  //           );
+  //         })}
+  //       </select>
+  //     </div>
+
+  //     <div>
+  //       <label className="block text-sm font-medium mb-1">End Time</label>
+  //       <select
+  //         value={endTime && isValid(endTime) ? endTime.toISOString() : ''}
+  //         onChange={handleEndTimeChange}
+  //         disabled={!startTime || readOnly}
+  //         className={`w-full p-2 border rounded ${!startTime ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+  //       >
+  //         <option value="">Select end time</option>
+  //         {getAvailableEndTimes(isAdminView).map(({ slot, isValid: slotIsValid }, i) => {
+  //           if (!slot || !isValid(slot)) return null;
+
+  //           return (
+  //             <option
+  //               key={`${slot.toISOString()}-${i}`}
+  //               value={slot.toISOString()}
+  //               disabled={false} // Admin can select any time slot
+  //               className={!slotIsValid && !isAdminView ? 'text-gray-400 bg-red-100' :
+  //                 !slotIsValid && isAdminView ? 'text-orange-600 bg-orange-100' : ''}
+  //             >
+  //               {safeFormat(slot, 'h:mm a')} {
+  //                 isAdminView ?
+  //                   (slotIsValid ? '✅' : '⚠️ Conflicts') :
+  //                   (slotIsValid ? '✅' : '❌')
+  //               }
+  //             </option>
+  //           );
+  //         })}
+  //       </select>
+  //     </div>
+
+  //     {/* Additional debug info for end times */}
+  //     {startTime && selectedTable && isValid(startTime) && (
+  //       <div className="p-3 bg-green-50 text-green-800 rounded text-sm">
+  //         <strong>Debug - End Time Analysis for {safeFormat(startTime, 'h:mm a')}:</strong>
+  //         <div className="text-xs mt-1 space-y-1">
+  //           {!isAdminView && (
+  //             <>
+  //               <div>Next booking buffer starts at: {
+  //                 tableBookingsWithBuffers.find(booking => booking.start > startTime)
+  //                   ? safeFormat(tableBookingsWithBuffers.find(booking => booking.start > startTime).start, 'h:mm a')
+  //                   : 'None'
+  //               }</div>
+  //             </>
+  //           )}
+  //           <div>Available end slots: {getAvailableEndTimes(isAdminView).length}</div>
+  //           <div>End slots: {getAvailableEndTimes(isAdminView).map(({ slot }) => safeFormat(slot, 'h:mm a')).join(', ')}</div>
+  //           {isAdminView && (
+  //             <div className="text-orange-600 font-medium">
+  //               ⚠️ Admin Mode: All time slots are selectable, including conflicting ones
+  //             </div>
+  //           )}
+  //           <div className="font-semibold">Booking validations:</div>
+  //           {availableSlots.filter(slot => {
+  //             if (!slot || !isValid(slot)) return false;
+  //             const minutes = differenceInMinutes(slot, startTime);
+  //             return isBefore(startTime, slot) && minutes >= MIN_BOOKING_MINUTES;
+  //           }).slice(0, 5).map(slot => {
+  //             const nextBooking = tableBookingsWithBuffers.find(booking => booking.start > startTime);
+  //             const wouldExceedNext = nextBooking && slot > nextBooking.start;
+  //             const wouldOverlap = tableBookingsWithBuffers.some(booking => {
+  //               return (
+  //                 (startTime >= booking.start && startTime < booking.end) ||
+  //                 (slot > booking.start && slot <= booking.end) ||
+  //                 (startTime <= booking.start && slot >= booking.end)
+  //               );
+  //             });
+
+  //             return (
+  //               <div key={slot.toISOString()} className="ml-2 text-xs">
+  //                 {safeFormat(slot, 'h:mm a')}:
+  //                 {wouldExceedNext && ' ❌ Exceeds next booking'}
+  //                 {wouldOverlap && ' ❌ Overlaps with booking'}
+  //                 {!wouldExceedNext && !wouldOverlap && ' ✅ Valid'}
+  //                 {isAdminView && (wouldExceedNext || wouldOverlap) && ' (Admin can override)'}
+  //               </div>
+  //             );
+  //           })}
+  //         </div>
+  //       </div>
+  //     )}
+  //   </div>
+  // );
+
   return (
     <div className="space-y-4">
       {!selectedTable && (
-        <div className="p-3 bg-yellow-50 text-yellow-800 rounded text-sm">
+        <div className="p-3 bg-[var(--warning)]/10 text-[var(--warning)] rounded text-sm">
           Please select a table to book time slots
         </div>
       )}
-
+  
       {/* Debug info */}
       {!readOnly && (
         <>
           {selectedTable && bookings.length > 0 && (
-            <div className="p-3 bg-blue-50 text-blue-800 rounded text-sm">
+            <div className="p-3 bg-[var(--info)]/10 text-[var(--info)] rounded text-sm">
               <strong className="block mb-2">Debug - Current Bookings for Table {selectedTable.tableNumber}:</strong>
-              <div className="max-h-24 overflow-y-auto bg-white bg-opacity-50 rounded p-2 space-y-1">
+              <div className="max-h-24 overflow-y-auto bg-[var(--bg-light)] bg-opacity-50 rounded p-2 space-y-1">
                 {bookings
                   .filter(booking =>
                     (booking.tableId === selectedTable._id || booking.table?.toString() === selectedTable._id.toString()) &&
@@ -305,24 +469,24 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
                   .map((booking, index) => {
                     const start = new Date(booking.startTime);
                     const end = new Date(booking.endTime);
-
+  
                     if (!isValid(start) || !isValid(end)) {
                       return (
-                        <div key={index} className="text-xs text-red-600">
+                        <div key={index} className="text-xs text-[var(--danger)]">
                           Invalid booking data
                         </div>
                       );
                     }
-
+  
                     const bufferedStart = new Date(start.getTime() - BUFFER_MINUTES * 60000);
                     const bufferedEnd = new Date(end.getTime() + BUFFER_MINUTES * 60000);
-
+  
                     return (
                       <div key={index} className="text-xs">
-                        <div className="font-medium">
+                        <div className="font-medium text-[var(--text)]">
                           Booking: {safeFormat(start, 'h:mm a')} - {safeFormat(end, 'h:mm a')}
                         </div>
-                        <div className="text-blue-600">
+                        <div className="text-[var(--info)]">
                           Buffer: {safeFormat(bufferedStart, 'h:mm a')} - {safeFormat(bufferedEnd, 'h:mm a')}
                         </div>
                       </div>
@@ -333,26 +497,28 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
           )}
         </>
       )}
-
+  
       <div>
-        <label className="block text-sm font-medium mb-1">Start Time</label>
+        <label className="block text-sm font-medium mb-1 text-[var(--text)]">Start Time</label>
         <select
           value={startTime && isValid(startTime) ? startTime.toISOString() : ''}
           onChange={handleStartTimeChange}
           disabled={!selectedTable || readOnly}
-          className={`w-full p-2 border rounded ${!selectedTable ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+          className={`w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] ${
+            !selectedTable ? 'bg-[var(--bg)] cursor-not-allowed' : ''
+          }`}
         >
           <option value="">Select start time</option>
           {availableSlots.map((slot, index) => {
             if (!slot || !isValid(slot)) return null;
-
+  
             const isAvailable = isTimeSlotAvailable(slot, selectedTable, bookings);
             return (
               <option
                 key={`${slot.toISOString()}-${index}`}
                 value={slot.toISOString()}
                 disabled={!isAvailable && !isAdminView}
-                className={!isAvailable ? 'text-gray-400 bg-red-100' : ''}
+                className={!isAvailable ? 'text-[var(--text-muted)] bg-[var(--danger)]/10' : ''}
               >
                 {safeFormat(slot, 'h:mm a')} {!isAvailable ? '❌ Booked' : '✅'}
               </option>
@@ -360,26 +526,30 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
           })}
         </select>
       </div>
-
+  
       <div>
-        <label className="block text-sm font-medium mb-1">End Time</label>
+        <label className="block text-sm font-medium mb-1 text-[var(--text)]">End Time</label>
         <select
           value={endTime && isValid(endTime) ? endTime.toISOString() : ''}
           onChange={handleEndTimeChange}
           disabled={!startTime || readOnly}
-          className={`w-full p-2 border rounded ${!startTime ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+          className={`w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] ${
+            !startTime ? 'bg-[var(--bg)] cursor-not-allowed' : ''
+          }`}
         >
           <option value="">Select end time</option>
           {getAvailableEndTimes(isAdminView).map(({ slot, isValid: slotIsValid }, i) => {
             if (!slot || !isValid(slot)) return null;
-
+  
             return (
               <option
                 key={`${slot.toISOString()}-${i}`}
                 value={slot.toISOString()}
                 disabled={false} // Admin can select any time slot
-                className={!slotIsValid && !isAdminView ? 'text-gray-400 bg-red-100' :
-                  !slotIsValid && isAdminView ? 'text-orange-600 bg-orange-100' : ''}
+                className={
+                  !slotIsValid && !isAdminView ? 'text-[var(--text-muted)] bg-[var(--danger)]/10' :
+                  !slotIsValid && isAdminView ? 'text-[var(--warning)] bg-[var(--warning)]/10' : ''
+                }
               >
                 {safeFormat(slot, 'h:mm a')} {
                   isAdminView ?
@@ -391,10 +561,10 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
           })}
         </select>
       </div>
-
+  
       {/* Additional debug info for end times */}
       {startTime && selectedTable && isValid(startTime) && (
-        <div className="p-3 bg-green-50 text-green-800 rounded text-sm">
+        <div className="p-3 bg-[var(--success)]/10 text-[var(--success)] rounded text-sm">
           <strong>Debug - End Time Analysis for {safeFormat(startTime, 'h:mm a')}:</strong>
           <div className="text-xs mt-1 space-y-1">
             {!isAdminView && (
@@ -409,7 +579,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
             <div>Available end slots: {getAvailableEndTimes(isAdminView).length}</div>
             <div>End slots: {getAvailableEndTimes(isAdminView).map(({ slot }) => safeFormat(slot, 'h:mm a')).join(', ')}</div>
             {isAdminView && (
-              <div className="text-orange-600 font-medium">
+              <div className="text-[var(--warning)] font-medium">
                 ⚠️ Admin Mode: All time slots are selectable, including conflicting ones
               </div>
             )}
@@ -428,7 +598,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
                   (startTime <= booking.start && slot >= booking.end)
                 );
               });
-
+  
               return (
                 <div key={slot.toISOString()} className="ml-2 text-xs">
                   {safeFormat(slot, 'h:mm a')}:
@@ -444,4 +614,5 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
       )}
     </div>
   );
+  
 }

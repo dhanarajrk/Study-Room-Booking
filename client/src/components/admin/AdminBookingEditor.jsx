@@ -97,14 +97,114 @@ export default function AdminBookingEditor() {
     }
   };
 
+  // //normal theme:
+  // return (
+  //   <div className="space-y-4">
+  //     <h4 className="font-semibold text-lg mb-2">
+  //       Bookings for Table {selectedTable.tableNumber}
+  //     </h4>
+  
+  //     {tableBookings.length === 0 ? (
+  //       <div className="text-sm text-gray-500">No bookings found for this table.</div>
+  //     ) : (
+  //       tableBookings.map((booking) => {
+  //         const start = new Date(booking.startTime);
+  //         const end = new Date(booking.endTime);
+  //         const username = booking.user?.username || 'Unknown';
+  
+  //         return (
+  //           <div
+  //             key={booking._id}
+  //             className={`p-3 border rounded space-y-1 flex justify-between items-center ${
+  //               selectedSlot?._id === booking._id ? 'bg-blue-50' : 'bg-gray-50'
+  //             }`}
+  //           >
+  //             <div>
+  //               <div className="text-sm font-medium text-gray-800">
+  //                 {format(start, 'p')} – {format(end, 'p')}
+  //               </div>
+  //               <div className="text-xs text-gray-600">Booked by: {username}</div>
+  //             </div>
+  //             <div className="flex flex-col items-end gap-1">
+  //               <button
+  //                 onClick={() => {
+  //                   setSelectedSlot(booking);
+  //                   setSelectedTime(start);
+  //                   const mins = (end.getTime() - start.getTime()) / 60000;
+  //                   setHours(Math.floor(mins / 60));
+  //                   setMinutes(mins % 60);
+  //                   setTotalAmount(0);
+  //                 }}
+  //                 className="text-sm text-blue-600 hover:underline"
+  //               >
+  //                 ✏️ Edit
+  //               </button>
+  
+  //               {booking.status === 'cancelled' ? (
+  //                 <div className="text-xs text-red-600 font-semibold text-right">
+  //                   Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
+  //                   <span
+  //                     className={
+  //                       booking.refundStatus === 'SUCCESS'
+  //                         ? 'text-green-500'
+  //                         : 'text-red-600'
+  //                     }
+  //                   >
+  //                     {booking.refundStatus}
+  //                   </span>
+  //                   )
+  //                   <button
+  //                     onClick={() => handleRefreshRefundStatus(booking._id)}
+  //                     className="ml-2 text-blue-600 hover:underline text-xs"
+  //                   >
+  //                     Refresh Refund Status
+  //                   </button>
+  //                 </div>
+  //               ) : (
+  //                 <button
+  //                   onClick={() => handleCancelSlot(booking._id)}
+  //                   className="text-sm text-red-600 hover:underline"
+  //                 >
+  //                   🚫 Cancel Slot
+  //                 </button>
+  //               )}
+  //             </div>
+  //           </div>
+  //         );
+  //       })
+  //     )}
+  
+  //     {selectedSlot && (
+  //       <div className="space-y-2 pt-4 border-t">
+  //         <h4 className="font-medium text-sm">Editing Slot</h4>
+  //         <TimeSlotPicker isAdminView={true} />
+  //         <div className="flex gap-2 pt-2">
+  //           <button
+  //             onClick={handleSaveChanges}
+  //             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+  //           >
+  //             ✅ Save Changes
+  //           </button>
+  //           <button
+  //             onClick={handleDeleteSlot}
+  //             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
+  //           >
+  //             🗑️ Delete Slot
+  //           </button>
+  //         </div>
+  //       </div>
+  //     )}
+  //   </div>
+  // );
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-[var(--text)]">
       <h4 className="font-semibold text-lg mb-2">
         Bookings for Table {selectedTable.tableNumber}
       </h4>
   
       {tableBookings.length === 0 ? (
-        <div className="text-sm text-gray-500">No bookings found for this table.</div>
+        <div className="text-sm text-[var(--text-muted)]">No bookings found for this table.</div>
       ) : (
         tableBookings.map((booking) => {
           const start = new Date(booking.startTime);
@@ -114,15 +214,17 @@ export default function AdminBookingEditor() {
           return (
             <div
               key={booking._id}
-              className={`p-3 border rounded space-y-1 flex justify-between items-center ${
-                selectedSlot?._id === booking._id ? 'bg-blue-50' : 'bg-gray-50'
+              className={`p-3 border border-[var(--border)] rounded space-y-1 flex justify-between items-center ${
+                selectedSlot?._id === booking._id 
+                  ? 'bg-[var(--info)]/10' 
+                  : 'bg-[var(--bg-light)]'
               }`}
             >
               <div>
-                <div className="text-sm font-medium text-gray-800">
+                <div className="text-sm font-medium">
                   {format(start, 'p')} – {format(end, 'p')}
                 </div>
-                <div className="text-xs text-gray-600">Booked by: {username}</div>
+                <div className="text-xs text-[var(--text-muted)]">Booked by: {username}</div>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <button
@@ -134,19 +236,19 @@ export default function AdminBookingEditor() {
                     setMinutes(mins % 60);
                     setTotalAmount(0);
                   }}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-[var(--primary)] hover:underline"
                 >
                   ✏️ Edit
                 </button>
   
                 {booking.status === 'cancelled' ? (
-                  <div className="text-xs text-red-600 font-semibold text-right">
+                  <div className="text-xs text-[var(--danger)] font-semibold text-right">
                     Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
                     <span
                       className={
                         booking.refundStatus === 'SUCCESS'
-                          ? 'text-green-500'
-                          : 'text-red-600'
+                          ? 'text-[var(--success)]'
+                          : 'text-[var(--danger)]'
                       }
                     >
                       {booking.refundStatus}
@@ -154,17 +256,17 @@ export default function AdminBookingEditor() {
                     )
                     <button
                       onClick={() => handleRefreshRefundStatus(booking._id)}
-                      className="ml-2 text-blue-600 hover:underline text-xs"
+                      className="ml-2 px-2 py-1 rounded bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 text-xs"
                     >
-                      Refresh Refund Status
+                      Refresh Status
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleCancelSlot(booking._id)}
-                    className="text-sm text-red-600 hover:underline"
+                    className="px-2 py-1 rounded bg-[var(--danger)] text-white hover:bg-[var(--danger)]/90 text-sm"
                   >
-                    🚫 Cancel Slot
+                    Cancel Slot
                   </button>
                 )}
               </div>
@@ -174,26 +276,28 @@ export default function AdminBookingEditor() {
       )}
   
       {selectedSlot && (
-        <div className="space-y-2 pt-4 border-t">
+        <div className="space-y-2 pt-4 border-t border-[var(--border)]">
           <h4 className="font-medium text-sm">Editing Slot</h4>
           <TimeSlotPicker isAdminView={true} />
           <div className="flex gap-2 pt-2">
             <button
               onClick={handleSaveChanges}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+              className="bg-[var(--success)] text-white px-4 py-2 rounded hover:bg-[var(--success)]/90 text-sm"
             >
-              ✅ Save Changes
+              Save Changes
             </button>
             <button
               onClick={handleDeleteSlot}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
+              className="bg-[var(--danger)] text-white px-4 py-2 rounded hover:bg-[var(--danger)]/90 text-sm"
             >
-              🗑️ Delete Slot
+              Delete Slot
             </button>
           </div>
         </div>
       )}
     </div>
   );
+
+  
   
 }

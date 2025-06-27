@@ -59,9 +59,9 @@ router.post('/create-order', async (req, res) => {
                 customer_email,
                 customer_name
             },
-            "order_meta": {
-                "return_url": "https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id={order_id}"
-            }
+            // "order_meta": {
+            //     "return_url": "https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id={order_id}"
+            // }
         };
 
         const createOrderResponse = await Cashfree.PGCreateOrder("2023-08-01", request);
