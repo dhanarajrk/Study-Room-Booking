@@ -1,7 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
 import { Cashfree, CFEnvironment } from "cashfree-pg";
-import axios from 'axios';
 
 const router = express.Router();
 
@@ -59,6 +58,7 @@ router.post('/create-order', async (req, res) => {
                 customer_email,
                 customer_name
             },
+            //I excluded redirecting to anywebsite when payment gateway is closed 
             // "order_meta": {
             //     "return_url": "https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id={order_id}"
             // }

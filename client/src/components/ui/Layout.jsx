@@ -70,7 +70,7 @@ const Layout = () => {
     </div>
   );
   */
-  
+
   //with Theme toggle mode:
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -97,6 +97,8 @@ const Layout = () => {
                     <div className="px-4 py-2 border-b border-[var(--border)] text-[var(--text)]">
                       Welcome! <strong>{user?.username}</strong>
                     </div>
+
+                    {/* My Bookings */}
                     <Link
                       to="/my-bookings"
                       className="block px-4 py-2 hover:bg-[var(--highlight)] text-[var(--text)]"
@@ -104,6 +106,19 @@ const Layout = () => {
                     >
                       My Bookings
                     </Link>
+
+                    {/* Admin Metrics - only show if user is admin */}
+                    {user?.role === 'admin' && (
+                      <Link
+                        to="/metrics"
+                        className="block px-4 py-2 hover:bg-[var(--highlight)] text-[var(--text)]"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Admin Metrics
+                      </Link>
+                    )}
+
+                    {/* Logout */}
                     <button
                       onClick={() => {
                         logout();
@@ -118,20 +133,15 @@ const Layout = () => {
               </div>
             ) : (
               <div className="space-x-4">
-                <Link
-                  to="/login"
-                  className="text-[var(--primary)] hover:opacity-80"
-                >
+                <Link to="/login" className="text-[var(--primary)] hover:opacity-80">
                   Login
                 </Link>
-                <Link
-                  to="/register"
-                  className="text-[var(--primary)] hover:opacity-80"
-                >
+                <Link to="/register" className="text-[var(--primary)] hover:opacity-80">
                   Register
                 </Link>
               </div>
             )}
+
           </div>
         </div>
       </header>

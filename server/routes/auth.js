@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { sendOTPEmail } from '../utils/emailService.js';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { getAdminMetrics } from '../controllers/adminController.js';
+import { authenticate, isAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -114,5 +116,9 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+
+//Admin Metrics Route
+router.get('/admin-metrics', authenticate, isAdmin, getAdminMetrics); //This is another clean way to trigger a function from another file when the route path is entered
 
 export default router;

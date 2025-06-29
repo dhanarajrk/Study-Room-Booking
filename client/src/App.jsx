@@ -8,6 +8,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import useBookingStore from './store/bookingStore';
 import { useEffect } from 'react';
 import MyBookings from './pages/MyBookings';
+import AdminMetrics from './pages/AdminMetrics';
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/" element={<div>Dashboard or Home</div>} />  //Home/Dashboard page
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/metrics" element={<AdminMetrics />} />
           </Route>
         </Route>
       </Routes>

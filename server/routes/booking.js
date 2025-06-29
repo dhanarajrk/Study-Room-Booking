@@ -1,7 +1,7 @@
 import express from 'express';
 import Booking from '../models/Booking.js';
 import Table from '../models/Table.js';
-import { authenticate, isAdmin } from '../middleware/auth.js';
+import { authenticate, isAdmin } from '../middleware/authMiddleware.js';
 import axios from 'axios';
 
 const router = express.Router();
@@ -41,7 +41,8 @@ router.post('/', authenticate, async (req, res) => {
     const totalPrice = tableDoc.hourlyRate * durationHours;
 
     // Ensure payment status is SUCCESS before creating the new booking slot
-    if (payment?.status !== 'SUCCESS') {
+    // Allow admin to bypass payment check
+    if (req.user.role !== 'admin' && payment?.status !== 'SUCCESS') {
       return res.status(400).json({ message: 'Payment not successful. Booking not allowed.' });
     }
 
@@ -58,6 +59,11 @@ router.post('/', authenticate, async (req, res) => {
           sessionId: payment.sessionId,
           status: payment.status
         }
+      }),
+      ...(req.user.role === 'admin' && !payment && {
+        payment: {
+          status: 'CASH'
+        }
       })
     });
 
@@ -66,6 +72,7 @@ router.post('/', authenticate, async (req, res) => {
     // Populate the user field before emitting so that it includes username so that it can take immediatechanges for 'Booked by: {usernmae}' in Admin Editing section. Otherwise it will show 'Booked by: Unkown' if we send only user ObjectId
     const populatedBooking = await Booking.findById(booking._id).populate('user', 'username');
     global.io.emit('booking:create', populatedBooking);
+    global.io.emit('metrics:update'); //another emit so that admin metrics page will refetch data and update metrics in realtime 
 
     res.status(201).json(booking);
   } catch (err) {
@@ -176,6 +183,8 @@ router.delete('/:id', authenticate, async (req, res) => {
       status: booking.status,
       tableId: booking.table,
     });
+
+    global.io.emit('metrics:update'); 
 
     //TRIGGER Create-Refund API call: (I reffered to their offical Docs)
     const createRefundResponse = await axios.post(

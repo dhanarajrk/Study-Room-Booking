@@ -10,8 +10,8 @@
         --text: hsl(224 0% 4%);
         --text-muted: hsl(224 0% 28%);
         --highlight: hsl(224 0% 80%);
-        --border: hsl(224 0% 50%);
-        --border-muted: hsl(224 0% 62%);
+        --border: hsla(224, 0%, 50%, 0);
+        --border-muted: hsla(224, 0%, 62%, 0);
         --primary: hsl(357 44% 32%);
         --secondary: hsl(183 100% 9%);
         --danger: hsl(9 21% 41%);
@@ -38,4 +38,3 @@
         --info: hsl(217 28% 65%);
     }
 }
-

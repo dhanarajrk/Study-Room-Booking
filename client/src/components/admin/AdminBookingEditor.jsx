@@ -214,10 +214,10 @@ export default function AdminBookingEditor() {
           return (
             <div
               key={booking._id}
-              className={`p-3 border border-[var(--border)] rounded space-y-1 flex justify-between items-center ${
+              className={`p-3 rounded shadow-lg dark:shadow-[0px_4px_10px_rgba(255,255,255,0.1),0px_2px_4px_rgba(0,0,0,0.4)] space-y-1 flex justify-between items-center ${
                 selectedSlot?._id === booking._id 
                   ? 'bg-[var(--info)]/10' 
-                  : 'bg-[var(--bg-light)]'
+                  : 'bg-[var(--bg)]'
               }`}
             >
               <div>

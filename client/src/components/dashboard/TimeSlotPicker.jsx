@@ -504,7 +504,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
           value={startTime && isValid(startTime) ? startTime.toISOString() : ''}
           onChange={handleStartTimeChange}
           disabled={!selectedTable || readOnly}
-          className={`w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] ${
+          className={`w-full p-2 rounded shadow-lg dark:shadow-[0px_4px_10px_rgba(255,255,255,0.1),0px_2px_4px_rgba(0,0,0,0.4)] bg-[var(--bg)] text-[var(--text)] ${
             !selectedTable ? 'bg-[var(--bg)] cursor-not-allowed' : ''
           }`}
         >
@@ -533,7 +533,7 @@ export default function TimeSlotPicker({ readOnly = false, isAdminView = false }
           value={endTime && isValid(endTime) ? endTime.toISOString() : ''}
           onChange={handleEndTimeChange}
           disabled={!startTime || readOnly}
-          className={`w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] ${
+          className={`w-full p-2 rounded shadow-lg dark:shadow-[0px_4px_10px_rgba(255,255,255,0.1),0px_2px_4px_rgba(0,0,0,0.4)] bg-[var(--bg)] text-[var(--text)] ${
             !startTime ? 'bg-[var(--bg)] cursor-not-allowed' : ''
           }`}
         >
