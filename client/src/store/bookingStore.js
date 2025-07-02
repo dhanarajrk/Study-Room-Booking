@@ -48,8 +48,8 @@ const useBookingStore = create((set, get) => ({
 
   clearSelection: () => set({ selectedTable: null }),
 
-  //if submitBooking(userId) is called without (payment), then payment will default its value to null. And if submitBooking(userId, payment) is called, then payment is not null
-  submitBooking: async (userId, payment = null) => {
+  //if submitBooking(userId) is called without (payment), then payment will default its value to null. And if submitBooking(userId, payment) is called, then payment is not null. Likewise for manualBookedUser also
+  submitBooking: async (userId, payment = null, manualBookedUser = null) => {
     const currentState = get();
     set({ isLoading: true, error: null });
 
@@ -65,7 +65,8 @@ const useBookingStore = create((set, get) => ({
           (currentState.hours * 60 * 60 * 1000) +
           (currentState.minutes * 60 * 1000)
         ).toISOString(),
-        ...(payment && { payment }) // only include if not null, payment will not be null if submitBooking is called as submitBooking(user._id, payment)
+        ...(payment && { payment }), // only include if not null, payment will not be null if submitBooking is called as submitBooking(user._id, payment)
+        ...(manualBookedUser && { manualBookedUser })
       };
 
       console.log("Preparing to book:", bookingData);

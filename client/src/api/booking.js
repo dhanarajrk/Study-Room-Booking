@@ -13,7 +13,8 @@ export const createBooking = async (bookingData) => {
       user: bookingData.user,    // Change from userId to user
       startTime: bookingData.startTime,
       endTime: bookingData.endTime,
-      ...(bookingData.payment && { payment: bookingData.payment }) // Conditionally include payment
+      ...(bookingData.payment && { payment: bookingData.payment }), // Conditionally include payment
+      ...(bookingData.manualBookedUser && { manualBookedUser: bookingData.manualBookedUser })
     }, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -70,7 +71,7 @@ export const updateBooking = async (bookingId, startTime, endTime) => {
 //admin: DELETE booking req
 export const deleteBooking = async (bookingId) => {
   const token = localStorage.getItem('token');
-  const res = await axios.delete(`${API_BASE_URL}/bookings/${bookingId}`, {
+  const res = await axios.delete(`${API_BASE_URL}/bookings/delete/${bookingId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

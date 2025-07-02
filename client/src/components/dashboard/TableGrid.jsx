@@ -7,7 +7,7 @@ import useAuthStore from '../../store/authStore.js';
 const BUFFER_MINUTES = 30;
 const MIN_BOOKING_MINUTES = 30;
 
-const TableIcon = ({ table, onSelect }) => {
+const TableIcon = ({ table, onSelect, isSelected }) => {
   const { bookings, selectedDate } = useBookingStore();
   const { user } = useAuthStore();
 
@@ -45,57 +45,81 @@ const TableIcon = ({ table, onSelect }) => {
     reserved: 'bg-blue-100 border-blue-300 cursor-pointer relative',
     available: 'bg-green-100 border-green-300 hover:bg-green-200 cursor-pointer',
   };
+
+  const selectedClasses = {
+    occupied: 'ring-4 ring-red-400 ring-opacity-75 shadow-lg transform scale-105',
+    reserved: 'ring-4 ring-blue-400 ring-opacity-75 shadow-lg transform scale-105',
+    available: 'ring-4 ring-green-400 ring-opacity-75 shadow-lg transform scale-105',
+  };
   
-  //console.log("🔄 Rendering TableIcon for table:", table._id, "Status:", status); 
+  // Allow admins to select "occupied" tables
+  const isAdmin = user?.role === 'admin';
+  const isSelectable = isAdmin || status !== 'occupied';
 
-  
-   // Allow admins to select "occupied" tables
-   const isAdmin = user?.role === 'admin';
-   const isSelectable = isAdmin || status !== 'occupied';
-
-   return (
-    <div
-      onClick={() => isSelectable && onSelect(table)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={`p-3 rounded-lg border ${statusClasses[status]} ${
-        isSelectable ? 'cursor-pointer' : 'cursor-not-allowed'
-      }`}
-    >
-      <div className="font-bold">T{table.tableNumber}</div>
-
-      {status === 'occupied' && (
-        <div className="text-xs text-red-600">Full booked</div>
-      )}
-
-      {status === 'reserved' && (
-        <>
-          <div className="text-xs text-blue-600">Available free slots</div>
-
-          {hovered && (
-            <div className="absolute z-50 mt-1 p-2 text-sm text-left bg-white border rounded shadow w-48">
-              <div className="font-semibold mb-1">Booked Slots:</div>
-              {bookings.filter((b) =>
-                (b.tableId === table._id || b.table?.toString() === table._id.toString()) &&
-                b.status !== 'cancelled'
-              ).map((booking) => {
-                const start = new Date(booking.startTime);
-                const end = new Date(booking.endTime);
-
-                return (
-                  <div key={booking._id} className="text-gray-700">
-                    {format(start, 'h:mm a')} - {format(end, 'h:mm a')}
-                  </div>
-                );
-              })}
+  return (
+    <div className="relative">
+      <div
+        onClick={() => isSelectable && onSelect(table)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={`
+          p-3 rounded-lg border transition-all duration-300 ease-in-out h-16 flex flex-col justify-between
+          ${statusClasses[status]} 
+          ${isSelected ? selectedClasses[status] : ''}
+          ${isSelectable ? 'cursor-pointer' : 'cursor-not-allowed'}
+        `}
+      >
+        <div className="flex items-center justify-between">
+          <div className="font-bold">T{table.tableNumber}</div>
+          {isSelected && (
+            <div className="animate-bounce">
+              <svg 
+                className="w-5 h-5 text-green-600" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path 
+                  fillRule="evenodd" 
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                  clipRule="evenodd" 
+                />
+              </svg>
             </div>
           )}
-        </>
+        </div>
+
+        <div className="h-4 flex items-end">
+          {status === 'occupied' && (
+            <div className="text-xs text-red-600">Full booked</div>
+          )}
+
+          {status === 'reserved' && (
+            <div className="text-xs text-blue-600">Available free slots</div>
+          )}
+        </div>
+      </div>
+
+      {status === 'reserved' && hovered && (
+        <div className="fixed z-[9999] mt-1 p-2 text-sm text-left bg-white border rounded shadow-lg w-48 pointer-events-none">
+          <div className="font-semibold mb-1">Booked Slots:</div>
+          {bookings.filter((b) =>
+            (b.tableId === table._id || b.table?.toString() === table._id.toString()) &&
+            b.status !== 'cancelled'
+          ).map((booking) => {
+            const start = new Date(booking.startTime);
+            const end = new Date(booking.endTime);
+
+            return (
+              <div key={booking._id} className="text-gray-700">
+                {format(start, 'h:mm a')} - {format(end, 'h:mm a')}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 };
-
 
 function checkIfTableHasAvailableSlots(table, allBookings, selectedDate) {
   const now = new Date();

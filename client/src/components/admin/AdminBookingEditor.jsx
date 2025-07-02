@@ -209,95 +209,104 @@ export default function AdminBookingEditor() {
         tableBookings.map((booking) => {
           const start = new Date(booking.startTime);
           const end = new Date(booking.endTime);
-          const username = booking.user?.username || 'Unknown';
+          const username = booking.manualBookedUser?.username || booking.user?.username || 'Unknown'; //it will store manual booked username if paid manually by admin, otherwise it will store the username that done online payment
+  
+          const isEditing = selectedSlot?._id === booking._id;
   
           return (
-            <div
-              key={booking._id}
-              className={`p-3 rounded shadow-lg dark:shadow-[0px_4px_10px_rgba(255,255,255,0.1),0px_2px_4px_rgba(0,0,0,0.4)] space-y-1 flex justify-between items-center ${
-                selectedSlot?._id === booking._id 
-                  ? 'bg-[var(--info)]/10' 
-                  : 'bg-[var(--bg)]'
-              }`}
-            >
-              <div>
-                <div className="text-sm font-medium">
-                  {format(start, 'p')} – {format(end, 'p')}
+            <div key={booking._id} className="space-y-2">
+              <div
+                className={`p-3 rounded shadow-lg dark:shadow-[0px_4px_10px_rgba(255,255,255,0.1),0px_2px_4px_rgba(0,0,0,0.4)] space-y-1 flex justify-between items-center ${
+                  isEditing ? 'bg-[var(--info)]/10' : 'bg-[var(--bg)]'
+                }`}
+              >
+                <div>
+                  <div className="text-sm font-medium">
+                    {format(start, 'p')} – {format(end, 'p')}
+                  </div>
+                  <div className="text-xs text-[var(--text-muted)]">Booked by: {username}</div>
                 </div>
-                <div className="text-xs text-[var(--text-muted)]">Booked by: {username}</div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <button
-                  onClick={() => {
-                    setSelectedSlot(booking);
-                    setSelectedTime(start);
-                    const mins = (end.getTime() - start.getTime()) / 60000;
-                    setHours(Math.floor(mins / 60));
-                    setMinutes(mins % 60);
-                    setTotalAmount(0);
-                  }}
-                  className="text-sm text-[var(--primary)] hover:underline"
-                >
-                  ✏️ Edit
-                </button>
+                <div className="flex flex-col items-end gap-1">
+                  <button
+                    onClick={() => {
+                      setSelectedSlot(booking);
+                      setSelectedTime(start);
+                      const mins = (end.getTime() - start.getTime()) / 60000;
+                      setHours(Math.floor(mins / 60));
+                      setMinutes(mins % 60);
+                      setTotalAmount(0);
+                    }}
+                    className="text-sm text-[var(--primary)] hover:underline"
+                  >
+                    ✏️ Edit
+                  </button>
   
-                {booking.status === 'cancelled' ? (
-                  <div className="text-xs text-[var(--danger)] font-semibold text-right">
-                    Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
-                    <span
-                      className={
-                        booking.refundStatus === 'SUCCESS'
-                          ? 'text-[var(--success)]'
-                          : 'text-[var(--danger)]'
-                      }
-                    >
-                      {booking.refundStatus}
-                    </span>
-                    )
+                  {booking.status === 'cancelled' ? (
+                    <div className="text-xs text-[var(--danger)] font-semibold text-right">
+                      Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
+                      <span
+                        className={
+                          booking.refundStatus === 'SUCCESS'
+                            ? 'text-[var(--success)]'
+                            : 'text-[var(--danger)]'
+                        }
+                      >
+                        {booking.refundStatus}
+                      </span>
+                      )
+                      <button
+                        onClick={() => handleRefreshRefundStatus(booking._id)}
+                        className="ml-2 px-2 py-1 rounded bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 text-xs"
+                      >
+                        Refresh Status
+                      </button>
+                    </div>
+                  ) : (
                     <button
-                      onClick={() => handleRefreshRefundStatus(booking._id)}
-                      className="ml-2 px-2 py-1 rounded bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 text-xs"
+                      onClick={() => handleCancelSlot(booking._id)}
+                      className="px-2 py-1 rounded bg-[var(--danger)] text-white hover:bg-[var(--danger)]/90 text-sm"
                     >
-                      Refresh Status
+                      Cancel Slot
+                    </button>
+                  )}
+                </div>
+              </div>
+  
+              {/* Show Editing UI directly below the booking being edited */}
+              {isEditing && (
+                <div className="space-y-2 pt-3 border-t border-[var(--border)] mt-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium text-sm">Editing Slot</h4>
+                    <button
+                      onClick={() => setSelectedSlot(null)}
+                      className="text-xs text-[var(--danger)] hover:underline"
+                    >
+                      ✕ Close
                     </button>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => handleCancelSlot(booking._id)}
-                    className="px-2 py-1 rounded bg-[var(--danger)] text-white hover:bg-[var(--danger)]/90 text-sm"
-                  >
-                    Cancel Slot
-                  </button>
-                )}
-              </div>
+                  <TimeSlotPicker isAdminView={true} />
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={handleSaveChanges}
+                      className="bg-[var(--success)] text-white px-4 py-2 rounded hover:bg-[var(--success)]/90 text-sm"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={handleDeleteSlot}
+                      className="bg-[var(--danger)] text-white px-4 py-2 rounded hover:bg-[var(--danger)]/90 text-sm"
+                    >
+                      Delete Slot
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })
       )}
-  
-      {selectedSlot && (
-        <div className="space-y-2 pt-4 border-t border-[var(--border)]">
-          <h4 className="font-medium text-sm">Editing Slot</h4>
-          <TimeSlotPicker isAdminView={true} />
-          <div className="flex gap-2 pt-2">
-            <button
-              onClick={handleSaveChanges}
-              className="bg-[var(--success)] text-white px-4 py-2 rounded hover:bg-[var(--success)]/90 text-sm"
-            >
-              Save Changes
-            </button>
-            <button
-              onClick={handleDeleteSlot}
-              className="bg-[var(--danger)] text-white px-4 py-2 rounded hover:bg-[var(--danger)]/90 text-sm"
-            >
-              Delete Slot
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
-
   
   
 }

@@ -84,7 +84,7 @@ export default function Dashboard() {
           selected={selectedDate}
           onChange={(date) => setDate(date)}
           minDate={new Date()}
-          className="border border-[var(--border)] p-2 rounded bg-[var(--bg-light)] text-[var(--text)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+          className="border border-[var(--border)] shadow-lg p-2 rounded bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
           calendarClassName="bg-[var(--bg-light)] border border-[var(--border)] text-[var(--text)]"
           dayClassName={(date) => 
             `text-[var(--text)] hover:bg-[var(--highlight)]`

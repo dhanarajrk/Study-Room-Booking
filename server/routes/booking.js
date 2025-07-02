@@ -9,7 +9,7 @@ const router = express.Router();
 // Create a new booking (user or admin)
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { table, user, startTime, endTime, payment } = req.body;
+    const { table, user, startTime, endTime, payment, manualBookedUser } = req.body;
 
     console.log("📦 Full request body:", req.body);
 
@@ -64,7 +64,8 @@ router.post('/', authenticate, async (req, res) => {
         payment: {
           status: 'CASH'
         }
-      })
+      }),
+      ...(req.user.role === 'admin' && manualBookedUser && { manualBookedUser })
     });
 
     await booking.save();
@@ -144,6 +145,31 @@ router.put('/:id', authenticate, isAdmin, async (req, res) => {
   }
 });
 
+
+//Admin: Hard Delete Slot:
+router.delete('/delete/:id', authenticate, async (req, res) => {
+  try {
+    // Only admin should be allowed to hard delete
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admin can delete bookings permanently' });
+    }
+
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    await Booking.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Booking deleted permanently' });
+  } catch (err) {
+    console.error('❌ Error deleting booking:', err);
+    res.status(500).json({ message: 'Failed to delete booking', error: err.message });
+  }
+});
+
+
 // User or Admin: Cancel a booking (soft delete)
 router.delete('/:id', authenticate, async (req, res) => {
   try {
@@ -184,29 +210,46 @@ router.delete('/:id', authenticate, async (req, res) => {
       tableId: booking.table,
     });
 
-    global.io.emit('metrics:update'); 
+    global.io.emit('metrics:update');
 
-    //TRIGGER Create-Refund API call: (I reffered to their offical Docs)
-    const createRefundResponse = await axios.post(
-      `https://sandbox.cashfree.com/pg/orders/${booking.payment.orderId}/refunds`,
-      {
-        refund_amount: booking.refundAmount,
-        refund_id: refundId,
-        refund_note: 'User cancelled booking',
-        refund_speed: 'STANDARD', //Can also use 'INSTANT' for now CashFree accepts only STANDARD for testing which takes 1-2hrs to processs the refund 
-      },
-      {
-        headers: {
-          'x-api-version': '2023-08-01',
-          'x-client-id': process.env.CASHFREE_CLIENT_ID,
-          'x-client-secret': process.env.CASHFREE_CLIENT_SECRET,
-          'Content-Type': 'application/json',
+    // Case 1: Manual (cash) payment – no online refund (no cashfree reund api)
+    if (booking.payment?.status === 'CASH') {
+      booking.refundStatus = 'CASH_REFUND';
+      await booking.save();
+
+      return res.json({
+        message: 'Booking cancelled (cash)',
+        refundStatus: booking.refundStatus,
+        refundAmount: booking.refundAmount,
+        refundId,
+      });
+    }
+    else {
+      // Case 2: Online refund via Cashfree
+      //TRIGGER Create-Refund API call: (I reffered to their offical Docs)
+      const createRefundResponse = await axios.post(
+        `https://sandbox.cashfree.com/pg/orders/${booking.payment.orderId}/refunds`,
+        {
+          refund_amount: booking.refundAmount,
+          refund_id: refundId,
+          refund_note: 'User cancelled booking',
+          refund_speed: 'STANDARD', //Can also use 'INSTANT' for now CashFree accepts only STANDARD for testing which takes 1-2hrs to processs the refund 
         },
-      }
-    );
-    console.log('✅ Refund created:', createRefundResponse.data);
-    booking.refundStatus = createRefundResponse.data.refund_status; //(not a soft update, this is accurate update after create refund API response)
-    await booking.save();
+        {
+          headers: {
+            'x-api-version': '2023-08-01',
+            'x-client-id': process.env.CASHFREE_CLIENT_ID,
+            'x-client-secret': process.env.CASHFREE_CLIENT_SECRET,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log('✅ Refund created:', createRefundResponse.data);
+      booking.refundStatus = createRefundResponse.data.refund_status; //(not a soft update, this is accurate update after create refund API response)
+      await booking.save();
+    }
+
+
 
     /*
   //TRIGGER GET Refund Status for refund status verification (to fetch verified refund status)

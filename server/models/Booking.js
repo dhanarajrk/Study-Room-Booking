@@ -16,7 +16,14 @@ const bookingSchema = new mongoose.Schema({
     orderId: { type: String },           
     sessionId: { type: String },    
     status: { type: String, default: 'PENDING' } 
-  }
+  },
+
+  manualBookedUser: {
+    username: String,
+    email: String,
+    phone: String
+  },
+  
 }, { timestamps: true });
 
 //Add index for efficient conflict checking (1 represents sorting in ascending for efficient search)
