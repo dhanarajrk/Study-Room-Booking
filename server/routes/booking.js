@@ -4,6 +4,12 @@ import Table from '../models/Table.js';
 import { authenticate, isAdmin } from '../middleware/authMiddleware.js';
 import axios from 'axios';
 
+import path from 'path';
+import fs from 'fs';
+import { generateInvoicePDF } from '../utils/generateInvoice.js';
+import { uploadToGoFile } from '../utils/uploadToGoFile.js';
+import { sendInvoiceEmail } from '../utils/emailService.js';
+
 const router = express.Router();
 
 // Create a new booking (user or admin)
@@ -74,6 +80,29 @@ router.post('/', authenticate, async (req, res) => {
     const populatedBooking = await Booking.findById(booking._id).populate('user', 'username');
     global.io.emit('booking:create', populatedBooking);
     global.io.emit('metrics:update'); //another emit so that admin metrics page will refetch data and update metrics in realtime 
+
+    //Generate and email invoice (only if user email exists)
+    const recipientEmail = req.user.email || manualBookedUser?.email;
+
+    if (recipientEmail) {
+      const pdfPath = path.resolve('invoices', `invoice_${booking._id}.pdf`); //invoices is local folder to temp store locally before uploading pdf and `invoice_${bookingId}.pdf` is the file name and path.join or path.resolve makes a path eg. 'invoices/invoice_bookingId123.pdf' 
+      await generateInvoicePDF({
+        _id: booking._id.toString(),
+        userName: req.user.username || manualBookedUser?.username || 'Guest',
+        email: recipientEmail,
+        tableName: tableDoc.tableNumber,
+        startTime,
+        endTime,
+        amountPaid: parseFloat(totalPrice.toFixed(2))
+      }, pdfPath);
+
+      console.log('📝 PDF Path:', pdfPath);
+      console.log('📁 Exists?', fs.existsSync(pdfPath));
+
+      const invoiceLink = await uploadToGoFile(pdfPath);
+      await sendInvoiceEmail(recipientEmail, invoiceLink);
+      fs.unlinkSync(pdfPath); // cleanup local invoice file from invoices folder
+    }
 
     res.status(201).json(booking);
   } catch (err) {

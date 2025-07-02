@@ -9,7 +9,7 @@ export const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    req.user = decoded; //req. is prefix because it is a payload object and i am adding custom data called user. Now req. payload will be shared and req.user can be accessed in that specific route
     next();
   } catch (err) {
     console.error('Token verification error:', err);

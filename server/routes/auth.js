@@ -84,7 +84,14 @@ router.post('/verify-otp', async (req, res) => {
         user.otpExpiry = undefined;
         await user.save();
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '12h' }); //create token for verified in user
+        // Include userid, email, username in JWT payload
+        const token = jwt.sign({ 
+            id: user._id, 
+            email: user.email, 
+            username: user.username,
+            role: user.role 
+        }, process.env.JWT_SECRET, { expiresIn: '12h' });
+        
         res.json({ message: 'Email verified successfully', user, token, });
     }
     catch (err) {
@@ -105,7 +112,14 @@ router.post('/login', async (req, res) => {
 
         if (!user.isVerified) return res.status(403).json({ message: 'Email not verified. Please verify first.' });
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '12h' });
+         // Include userid, email, username in JWT payload
+        const token = jwt.sign({ 
+            id: user._id, 
+            email: user.email, 
+            username: user.username,
+            role: user.role 
+        }, process.env.JWT_SECRET, { expiresIn: '12h' });
+        
         res.json({
             message: `${user.email} logged in successfully`,
             user: { _id: user._id, username: user.username, email: user.email, role: user.role, phoneNumber: user.phoneNumber },
