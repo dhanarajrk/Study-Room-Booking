@@ -87,7 +87,7 @@ const AdminMetrics = () => {
   const bookingsOverTime = metrics.bookingsOverTime || [];
   const revenueSummary = metrics.revenueSummary || { today: 0, period: 0, avg: 0 };
   const todayBookings = metrics.todayBookings || [];
-  const customerCount = metrics.customerCount || 0;
+  const todayBookingCount = metrics.todayBookingCount || 0;
   const performance = metrics.performance || 0;
   const performanceDetails = metrics.performanceDetails || null;
 
@@ -139,7 +139,7 @@ const AdminMetrics = () => {
           {/* 💳 Revenue Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card title={`Today's Revenue`} value={`₹${revenueSummary.today}`} />
-            <Card title={`Today's Customers`} value={`${customerCount}`} />
+            <Card title={`Today's Bookings`} value={`${todayBookingCount}`} />
             <Card title={formattedRange} value={`₹${revenueSummary.period}`} />
             <Card title="Avg. Per Booking" value={`₹${revenueSummary.avg}`} />
             <Card
@@ -255,17 +255,25 @@ const AdminMetrics = () => {
                 <li key={b._id} className="py-2">
                   {b.status === 'cancelled' ? (
                     <>
-                      <strong>{b.userName}</strong> cancelled table <strong>{b.tableName}</strong> from{" "}
+                      <strong>{b.userName} ({b.manualUsername ? 'admin' : 'user'})</strong> cancelled table <strong>{b.tableName}</strong> from{" "}
                       {new Date(b.startTime).toLocaleTimeString()} to{" "}
-                      {new Date(b.endTime).toLocaleTimeString()} (Refund Amount: ₹
-                      {b.refundAmount}) Payment: {b.paymentMethod}
+                      {new Date(b.endTime).toLocaleTimeString()} | Refund Amount: ₹{b.refundAmount} | Payment: {b.paymentMethod}
+                      {b.manualUsername && (
+                        <>
+                          {" "} | Customer: <strong>{b.manualUsername}</strong> | Customer Phone: {b.manualPhone}
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
-                      <strong>{b.userName}</strong> booked table <strong>{b.tableName}</strong> from{" "}
+                      <strong>{b.userName} ({b.manualUsername ? 'admin' : 'user'})</strong> booked table <strong>{b.tableName}</strong> from{" "}
                       {new Date(b.startTime).toLocaleTimeString()} to{" "}
-                      {new Date(b.endTime).toLocaleTimeString()} paid ₹
-                      {b.amountPaid} by {b.paymentMethod}
+                      {new Date(b.endTime).toLocaleTimeString()} | Paid Amount: ₹{b.amountPaid} | Payment: {b.paymentMethod}
+                      {b.manualUsername && (
+                        <>
+                          {" "} | Customer: <strong>{b.manualUsername}</strong> | Customer Phone: {b.manualPhone}
+                        </>
+                      )}
                     </>
                   )}
                 </li>

@@ -209,8 +209,8 @@ export const getAdminMetrics = async (req, res) => {
       }
     ]);
 
-    // 🙋‍♂️ Today's Customer Count (distinct users)
-    const todayCustomers = await Booking.distinct('user', {
+    // 🙋‍♂️ Today's Booking Count (non-cancelled bookings today)
+    const todayBookingCount = await Booking.countDocuments({
       startTime: { $gte: startOfDay(now), $lte: endOfDay(now) },
       status: { $ne: 'cancelled' }
     });
@@ -232,6 +232,8 @@ export const getAdminMetrics = async (req, res) => {
       paymentMethod: b.payment?.status === 'CASH' ? 'CASH' : 'ONLINE',
       status: b.status,
       refundAmount: b.refundAmount || 0,
+      manualUsername: b.manualBookedUser?.username || null,
+      manualPhone: b.manualBookedUser?.phone || null,
     }));
 
     // 🧾 Final payload
@@ -244,7 +246,7 @@ export const getAdminMetrics = async (req, res) => {
       },
       performance: performancePercent,
       performanceDetails: performanceComparison, // Additional context for frontend
-      customerCount: todayCustomers.length,
+      todayBookingCount,
       todayBookings: formattedBookings
     });
 
