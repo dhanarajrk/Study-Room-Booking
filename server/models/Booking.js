@@ -23,6 +23,9 @@ const bookingSchema = new mongoose.Schema({
     email: String,
     phone: String
   },
+
+  invoiceLink: { type: String },
+  invoiceLinkExpiresAt: { type: Date },
   
 }, { timestamps: true });
 

@@ -9,6 +9,7 @@ import bookingRoutes from './routes/booking.js';
 import tableRoutes from './routes/tables.js';
 import paymentRoutes from './routes/paymentroute.js';
 import webhookRoutes from './routes/webhookRoutes.js';
+import './utils/clearExpiredInvoices.js'; //invoice link expired clear cron to run automatically when server starts
 
 dotenv.config();
 

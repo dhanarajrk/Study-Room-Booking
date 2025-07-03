@@ -82,26 +82,37 @@ router.post('/', authenticate, async (req, res) => {
     global.io.emit('metrics:update'); //another emit so that admin metrics page will refetch data and update metrics in realtime 
 
     //Generate and email invoice (only if user email exists)
-    const recipientEmail = req.user.email || manualBookedUser?.email;
+    const recipientEmail = manualBookedUser?.email || req.user.email;
 
     if (recipientEmail) {
-      const pdfPath = path.resolve('invoices', `invoice_${booking._id}.pdf`); //invoices is local folder to temp store locally before uploading pdf and `invoice_${bookingId}.pdf` is the file name and path.join or path.resolve makes a path eg. 'invoices/invoice_bookingId123.pdf' 
-      await generateInvoicePDF({
-        _id: booking._id.toString(),
-        userName: req.user.username || manualBookedUser?.username || 'Guest',
-        email: recipientEmail,
-        tableName: tableDoc.tableNumber,
-        startTime,
-        endTime,
-        amountPaid: parseFloat(totalPrice.toFixed(2))
-      }, pdfPath);
+      try {
+        const pdfPath = path.resolve('invoices', `invoice_${booking._id}.pdf`); //invoices is local folder to temp store locally before uploading pdf and `invoice_${bookingId}.pdf` is the file name and path.join or path.resolve makes a path eg. 'invoices/invoice_bookingId123.pdf' 
+        await generateInvoicePDF({
+          _id: booking._id.toString(),
+          userName: manualBookedUser?.username || req.user.username || 'Guest',
+          email: recipientEmail,
+          tableName: tableDoc.tableNumber,
+          startTime,
+          endTime,
+          amountPaid: parseFloat(totalPrice.toFixed(2))
+        }, pdfPath);
 
-      console.log('📝 PDF Path:', pdfPath);
-      console.log('📁 Exists?', fs.existsSync(pdfPath));
+        console.log('📝 PDF Path:', pdfPath);
+        console.log('📁 Exists?', fs.existsSync(pdfPath));
 
-      const invoiceLink = await uploadToGoFile(pdfPath);
-      await sendInvoiceEmail(recipientEmail, invoiceLink);
-      fs.unlinkSync(pdfPath); // cleanup local invoice file from invoices folder
+        const invoiceLink = await uploadToGoFile(pdfPath);
+        await sendInvoiceEmail(recipientEmail, invoiceLink);
+        fs.unlinkSync(pdfPath); // cleanup local invoice file from invoices folder
+
+        //Save invoiceLink and expiry date in booking (I put here inside try because invoice Host server maybe down, So I saved booking before invoice generation also)
+        booking.invoiceLink = invoiceLink;
+        booking.invoiceLinkExpiresAt = new Date(Date.now() + 29 * 24 * 60 * 60 * 1000); // expiring in 29 days from now (will expired 1 day earlier from GoFile expiry setting for accessibilty assurance)
+        await booking.save();
+
+      } catch (err) {
+        console.error('❌ Failed to generate/upload/send invoice:', err.message);
+        // Proceed without invoiceLink if error occurs
+      }
     }
 
     res.status(201).json(booking);
