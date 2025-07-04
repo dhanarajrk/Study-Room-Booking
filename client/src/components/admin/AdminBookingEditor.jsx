@@ -209,8 +209,7 @@ export default function AdminBookingEditor() {
         tableBookings.map((booking) => {
           const start = new Date(booking.startTime);
           const end = new Date(booking.endTime);
-          const username = booking.manualBookedUser?.username || booking.user?.username || 'Unknown'; //it will store manual booked username if paid manually by admin, otherwise it will store the username that done online payment
-  
+          const username = booking.manualBookedUser?.username || booking.user?.username || 'Unknown';
           const isEditing = selectedSlot?._id === booking._id;
   
           return (
@@ -224,8 +223,35 @@ export default function AdminBookingEditor() {
                   <div className="text-sm font-medium">
                     {format(start, 'p')} – {format(end, 'p')}
                   </div>
-                  <div className="text-xs text-[var(--text-muted)]">Booked by: {username}</div>
+                  <div className="text-xs text-[var(--text-muted)]">
+                    Booked by: {username}
+                  </div>
+  
+                  {/* Invoice Button */}
+                  <div className="mt-1">
+                    {booking.invoiceLink ? (
+                      <a
+                        href={booking.invoiceLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <button
+                          className="mt-1 px-3 py-1 rounded bg-[var(--primary)] text-white text-xs hover:bg-[var(--primary)]/90 transition-colors"
+                        >
+                          View Invoice
+                        </button>
+                      </a>
+                    ) : (
+                      <button
+                        disabled
+                        className="mt-1 px-3 py-1 rounded bg-gray-300 text-gray-600 text-xs cursor-not-allowed"
+                      >
+                        Invoice Expired
+                      </button>
+                    )}
+                  </div>
                 </div>
+  
                 <div className="flex flex-col items-end gap-1">
                   <button
                     onClick={() => {
@@ -306,7 +332,7 @@ export default function AdminBookingEditor() {
         })
       )}
     </div>
-  );
+  );  
   
   
 }

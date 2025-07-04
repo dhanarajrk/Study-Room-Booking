@@ -157,11 +157,10 @@ const MyBookings = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1 rounded-full text-sm capitalize border transition ${
-              activeTab === tab
+            className={`px-4 py-1 rounded-full text-sm capitalize border transition ${activeTab === tab
                 ? 'bg-[var(--primary)] text-white border-[var(--primary)]'
                 : 'bg-[var(--bg-light)] text-[var(--text-muted)] border-[var(--border)] hover:bg-[var(--highlight)]'
-            }`}
+              }`}
           >
             {tab}
           </button>
@@ -178,13 +177,12 @@ const MyBookings = () => {
             <div
               key={booking._id}
               ref={(el) => (upcomingRefs.current[index] = el)}
-              className={`p-4 rounded shadow border space-y-1 transition ${
-                isCancelled
+              className={`p-4 rounded shadow border space-y-2 transition ${isCancelled
                   ? 'bg-[var(--danger)]/10 border-[var(--danger)] text-[var(--danger)]'
                   : isUpcoming
                     ? 'bg-[var(--success)]/10 border-[var(--success)]'
                     : 'bg-[var(--bg-light)] border-[var(--border)]'
-              }`}
+                }`}
             >
               <div className="flex justify-between items-center mb-1">
                 <div className="font-semibold">
@@ -200,7 +198,7 @@ const MyBookings = () => {
                 )}
               </div>
 
-              <div className="text-sm">
+              <div className="text-sm space-y-1">
                 <div>
                   <strong>Time:</strong> {format(new Date(booking.startTime), 'p')} -{' '}
                   {format(new Date(booking.endTime), 'p')}
@@ -210,10 +208,41 @@ const MyBookings = () => {
                 </div>
               </div>
 
+              {/* Invoice Button */}
+              <div className="mt-2">
+                {booking.invoiceLink ? (
+                  <a
+                    href={booking.invoiceLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <button
+                      className="px-3 py-1 rounded bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors text-sm"
+                    >
+                      View Invoice
+                    </button>
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="px-3 py-1 rounded bg-gray-300 text-gray-600 cursor-not-allowed text-sm"
+                  >
+                    Invoice Expired
+                  </button>
+                )}
+              </div>
+
+              {/* Refund Info for Cancelled */}
               {isCancelled && (
                 <div className="text-xs font-medium mt-1 text-[var(--danger)]">
                   Cancelled — Refund: ${booking.refundAmount?.toFixed(2)} (
-                  <span className={booking.refundStatus === 'SUCCESS' ? 'text-[var(--success)]' : 'text-[var(--danger)]'}>
+                  <span
+                    className={
+                      booking.refundStatus === 'SUCCESS'
+                        ? 'text-[var(--success)]'
+                        : 'text-[var(--danger)]'
+                    }
+                  >
                     {booking.refundStatus}
                   </span>
                   )
@@ -231,6 +260,7 @@ const MyBookings = () => {
       </div>
     </div>
   );
+
 };
 
 export default MyBookings;
