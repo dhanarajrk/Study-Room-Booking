@@ -37,12 +37,16 @@ const useBookingStore = create((set, get) => ({
     set({ bookingModalOpen: true });
   },
 
-  closeBookingModal: () => set({ bookingModalOpen: false }),
+  closeBookingModal: () => set({ 
+    bookingModalOpen: false, 
+    error: null 
+  }),
+  
   setDuration: (hours, minutes) => set({ hours, minutes }),
 
   calculateTotal: () => {
     const state = get();
-    const hourlyRate = 5; // $5 base rate
+    const hourlyRate = 30; // Rs.30 base rate
     return (state.hours * hourlyRate + (state.minutes / 60) * hourlyRate).toFixed(2);
   },
 

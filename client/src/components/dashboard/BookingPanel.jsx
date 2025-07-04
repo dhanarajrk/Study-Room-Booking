@@ -85,7 +85,7 @@ export default function BookingPanel() {
   //         </div>
   //         <div className="flex justify-between font-bold text-lg">
   //           <span>Total:</span>
-  //           <span>${totalAmount}</span>
+  //           <span>₹{totalAmount}</span>
   //         </div>
   //       </div>
   //     )}
@@ -147,7 +147,7 @@ export default function BookingPanel() {
           </div>
           <div className="flex justify-between font-bold text-lg text-[var(--text)]">
             <span>Total:</span>
-            <span>${totalAmount}</span>
+            <span>₹{totalAmount}</span>
           </div>
         </div>
       )}

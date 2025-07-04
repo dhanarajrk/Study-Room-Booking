@@ -38,3 +38,32 @@
         --info: hsl(217 28% 65%);
     }
 }
+
+
+/* Global Scrollbar Styling with Smooth Animation */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    transition: background-color 0.3s ease, opacity 0.3s ease; /* Smooth transition */
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 0, 0, 0.3); /* Subtle initial thumb (uses red with opacity) */
+    border-radius: 4px;
+    border: 2px solid var(--bg);
+    transition: background-color 0.3s ease, opacity 0.3s ease; /* Animate on hover */
+    opacity: 0.5; /* Slightly transparent by default */
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--bg-light);
+    border-radius: 4px;
+  }
+  
+  /* On hover - make thumb solid */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary);
+    opacity: 1;
+  }
+  
+  

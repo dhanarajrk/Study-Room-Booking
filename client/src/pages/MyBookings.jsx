@@ -204,7 +204,7 @@ const MyBookings = () => {
                   {format(new Date(booking.endTime), 'p')}
                 </div>
                 <div>
-                  <strong>Total:</strong> ${booking.totalPrice.toFixed(2)}
+                  <strong>Total:</strong> ₹{booking.totalPrice.toFixed(2)}
                 </div>
               </div>
 

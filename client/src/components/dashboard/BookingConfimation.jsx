@@ -56,9 +56,6 @@ export default function BookingConfirmation() {
         return;
       }
 
-      //const startTime = selectedTime;
-      //const endTime = addMinutes(addHours(selectedTime, hours), minutes);
-
       await submitBooking(user._id, null, user.role === 'admin' ? manualBookedUser : null);
       toast.success(`Table ${selectedTable.tableNumber} booked successfully!`);
       closeBookingModal();
@@ -84,10 +81,22 @@ export default function BookingConfirmation() {
     return null;
   }
 
-  const endTime = addMinutes(addHours(selectedTime, hours), minutes);
+  // ADD THIS: Validate time values before using date-fns functions
+  if (!selectedTime || isNaN(selectedTime.getTime()) || typeof hours !== 'number' || typeof minutes !== 'number') {
+    console.error('Invalid time values:', { selectedTime, hours, minutes });
+    return null; // or show an error message
+  }
 
-  //debug logged in user details
-  //console.log(user);
+  console.log('Debug hours values:', {
+    selectedTime,
+    selectedTimeValid: selectedTime instanceof Date && !isNaN(selectedTime.getTime()),
+    hours,
+    minutes,
+    hoursType: typeof hours,
+    minutesType: typeof minutes
+  });
+
+  const endTime = addMinutes(addHours(selectedTime, hours), minutes);
 
   return (
     <>

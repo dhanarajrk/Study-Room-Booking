@@ -11,7 +11,7 @@ const seedTables = async () => {
 
   const tables = Array.from({ length: 30 }, (_, i) => ({
     tableNumber: i + 1,
-    hourlyRate: 5, // $5 per hour
+    hourlyRate: 30, // Rs. 30 per hour
     isAvailable: true
   }));
 

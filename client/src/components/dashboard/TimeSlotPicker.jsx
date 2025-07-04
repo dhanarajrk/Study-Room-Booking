@@ -3,7 +3,7 @@ import { format, isBefore, differenceInMinutes, addMinutes, isValid } from 'date
 import { toast } from 'react-hot-toast';
 import useBookingStore from '../../store/bookingStore';
 
-const HOURLY_RATE = 5;
+const HOURLY_RATE = 30;
 const MIN_BOOKING_MINUTES = 30;
 const BUFFER_MINUTES = 30;
 
