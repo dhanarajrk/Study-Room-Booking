@@ -110,7 +110,7 @@ const RegisterPage = () => {
               placeholder="Username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
               required
             />
             <input
@@ -119,7 +119,7 @@ const RegisterPage = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
               required
             />
             <input
@@ -128,7 +128,7 @@ const RegisterPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
               required
             />
             <input
@@ -137,7 +137,7 @@ const RegisterPage = () => {
               placeholder="Phone Number"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg-light)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+              className="w-full p-2 border border-[var(--border)] rounded bg-[var(--bg)] text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)]"
               required
             />
             <button

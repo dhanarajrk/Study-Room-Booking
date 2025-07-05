@@ -16,7 +16,7 @@ export async function generateInvoicePDF(booking, outputPath) {
   doc.text(`Table: ${booking.tableName}`);
   doc.text(`Date: ${new Date(booking.startTime).toLocaleDateString()}`);
   doc.text(`Time: ${new Date(booking.startTime).toLocaleTimeString()} - ${new Date(booking.endTime).toLocaleTimeString()}`);
-  doc.text(`Amount Paid: ₹${booking.amountPaid}`);
+  doc.text(`Amount Paid: Rs. ${booking.amountPaid}`);
   doc.moveDown();
 
   // Add Barcode of Booking ID
