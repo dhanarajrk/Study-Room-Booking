@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cross-env NODE_ENV=production node index.js",
     "build": "cd ../client && npm install && npm run build",
     "postinstall": "npm run build",
     "dev": "nodemon index.js"
