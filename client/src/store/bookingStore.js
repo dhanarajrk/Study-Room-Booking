@@ -155,7 +155,7 @@ const useBookingStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/bookings/user/${userId}`, {
+      const res = await axios.get(`/api/auth/bookings/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

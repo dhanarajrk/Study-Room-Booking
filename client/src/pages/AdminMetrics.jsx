@@ -18,8 +18,6 @@ import 'react-circular-progressbar/dist/styles.css';
 import socket from '../socket/socket.js';
 
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 const AdminMetrics = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -69,7 +67,7 @@ const AdminMetrics = () => {
         params.to = to;
       }
 
-      const res = await axios.get(`${API_BASE_URL}/admin-metrics`, {
+      const res = await axios.get('/api/auth/admin-metrics', {
         headers: { Authorization: `Bearer ${token}` },
         params
       });

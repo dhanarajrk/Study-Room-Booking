@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const useAuthStore = create(
   persist(    //I use persist because I want the browser to remember isAuthenticated for logged in user so that isAuthenticated in authStore wont reset everytime I refresh the page, it will avoid bringing me back to '/login'
@@ -15,7 +14,7 @@ const useAuthStore = create(
       register: async (userData) => {
         set({ loading: true });
         try {
-          const res = await axios.post(`${API_BASE_URL}/register`, userData);
+          const res = await axios.post('/api/auth/register', userData);
           toast.success('OTP sent to your email!');
           return res.data;
         } catch (err) {
@@ -29,7 +28,7 @@ const useAuthStore = create(
       verifyOtp: async (email, otp) => {
         set({ loading: true });
         try {
-          const res = await axios.post(`${API_BASE_URL}/verify-otp`, { email, otp });
+          const res = await axios.post('/api/auth/verify-otp', { email, otp });
           set({ user: res.data.user, isAuthenticated: true });
           toast.success('Account verified!');
           return res.data;
@@ -44,7 +43,7 @@ const useAuthStore = create(
       login: async (credentials) => {
         set({ loading: true });
         try {
-          const res = await axios.post(`${API_BASE_URL}/login`, credentials);
+          const res = await axios.post('/api/auth/login', credentials);
           localStorage.setItem('token', res.data.token);
 
           const user = res.data.user;

@@ -1,14 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export const createBooking = async (bookingData) => {
   try {
     const token = localStorage.getItem('token');
 
     console.log('Final booking payload being sent to API:', bookingData);
 
-    const response = await axios.post(`${API_BASE_URL}/bookings`, {
+    const response = await axios.post('/api/auth/bookings', {
       table: bookingData.table,  // Change from tableId to table
       user: bookingData.user,    // Change from userId to user
       startTime: bookingData.startTime,
@@ -33,7 +31,7 @@ export const createBooking = async (bookingData) => {
 export const getBookings = async (params) => {
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_BASE_URL}/bookings`, {
+    const response = await axios.get('/api/auth/bookings', {
       params,
       headers: {
         Authorization: `Bearer ${token}`
@@ -48,7 +46,7 @@ export const getBookings = async (params) => {
 //User/Admin Cancel slot req:
 export const cancelBooking = async (bookingId) => {
   const token = localStorage.getItem('token');
-  const res = await axios.delete(`${API_BASE_URL}/bookings/${bookingId}`, {
+  const res = await axios.delete(`/api/auth/bookings/${bookingId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data;
@@ -57,7 +55,7 @@ export const cancelBooking = async (bookingId) => {
 //admin: UPDATE booking req:
 export const updateBooking = async (bookingId, startTime, endTime) => {
   const token = localStorage.getItem('token');
-  const res = await axios.put(`${API_BASE_URL}/bookings/${bookingId}`, {
+  const res = await axios.put(`/api/auth/bookings/${bookingId}`, {
     startTime,
     endTime,
   }, {
@@ -71,7 +69,7 @@ export const updateBooking = async (bookingId, startTime, endTime) => {
 //admin: DELETE booking req
 export const deleteBooking = async (bookingId) => {
   const token = localStorage.getItem('token');
-  const res = await axios.delete(`${API_BASE_URL}/bookings/delete/${bookingId}`, {
+  const res = await axios.delete(`/api/auth/bookings/delete/${bookingId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -83,7 +81,7 @@ export const deleteBooking = async (bookingId) => {
 //Manual Refetch Refund Status req func
 export const fetchRefundStatus = async (bookingId) => {
   const token = localStorage.getItem('token');
-  const response = await axios.get(`${API_BASE_URL}/bookings/refetch-refund/${bookingId}`,{
+  const response = await axios.get(`/api/auth/bookings/refetch-refund/${bookingId}`,{
     headers: {
       Authorization: `Bearer ${token}`,
     },

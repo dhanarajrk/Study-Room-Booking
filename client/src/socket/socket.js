@@ -1,6 +1,11 @@
 import { io } from 'socket.io-client';
-const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const socket = io(`${VITE_BACKEND_URL}`);
 
-export default socket;
+const socket = io(
+    import.meta.env.DEV ? 'http://localhost:5000' : '/',    //For Dev, socket connects to backend http://localhost:5000  AND for Production, socket connets to same domain '/' (since frontend is served by backend)
+    {
+      withCredentials: true
+    }
+  );
+  
+  export default socket;

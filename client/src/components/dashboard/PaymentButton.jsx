@@ -3,7 +3,6 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { load } from '@cashfreepayments/cashfree-js';
 
-const VITE_BACKEND_API = import.meta.env.VITE_BACKEND_API;
 
 let cashfree; // keep top-level SDK reference, as it will be used in handlePayment function
 
@@ -32,7 +31,7 @@ export default function PaymentButton({ user, totalAmount, onBookingSuccess }) {
 
     try {
       //send these user details to paymentroute.js in backend and store response in {data}
-      const { data } = await axios.post(`${VITE_BACKEND_API}/payments/create-order`, {
+      const { data } = await axios.post('/api/payments/create-order', {
         order_amount: totalAmount,
         customer_id: user.email.replace(/[^a-zA-Z0-9_-]/g, '_'),
         customer_phone: user.phoneNumber,
@@ -57,7 +56,7 @@ export default function PaymentButton({ user, totalAmount, onBookingSuccess }) {
 
       //After cashfree.checkout we can't actually know if the Create-order is done successfully or not
       //So, fetch payment status using Cashfree.PGOrderFetchPayments("2023-08-01", orderId) in backend for verification using orderId:
-      const paymentStatusResponse = await axios.post(`${VITE_BACKEND_API}/payments/check-payment-status/${data.order_id}`);
+      const paymentStatusResponse = await axios.post(`/api/payments/check-payment-status/${data.order_id}`);
       console.log("Payment status response received after checking:", paymentStatusResponse);
 
       const payment_status = paymentStatusResponse.data.paymentStatus; //extract the status string and pass in onBookingSuccess() status prop below
