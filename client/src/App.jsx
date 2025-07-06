@@ -27,12 +27,15 @@ function App() {
         {/* Protected Routes with Layout */}
         <Route element={<ProtectedRoute />}>  // User must be logged in
           <Route element={<Layout />}>        // Layout will apply for all protected pages
-            <Route path="/" element={<div>Dashboard or Home</div>} />  //Home/Dashboard page
+            <Route path="/" element={<Dashboard/>} />  //Home/Dashboard page
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/my-bookings" element={<MyBookings />} />
             <Route path="/metrics" element={<AdminMetrics />} />
           </Route>
         </Route>
+
+        {/* Catch-all unkown Route*/}
+        <Route path="*" element={ <h1 className="text-center mt-20 text-3xl font-bold text-gray-700">404 - Page Not Found</h1>} /> {/* Fallback route for unkown routes*/}
       </Routes>
     </BrowserRouter>
   );
