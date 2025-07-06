@@ -19,7 +19,7 @@ router.post('/register', async (req, res) => {
 
     // Validate phone number BEFORE try (using libphonenumber-js npm)
     if (phoneNumber) {
-        const phoneNumberObj = parsePhoneNumberFromString(phoneNumber);
+        const phoneNumberObj = parsePhoneNumberFromString(phoneNumber, 'IN');
         if (!phoneNumberObj || !phoneNumberObj.isValid()) {
             return res.status(400).json({ message: 'Invalid phone number format' });
         }
