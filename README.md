@@ -27,7 +27,7 @@ This is a full-stack MERN application for booking study tables in a library. It 
 | **Backend**   | Node.js, Express.js, MongoDB, Mongoose, Socket.IO, JSON Web Token (JWT), Bcrypt.js, Nodemailer              |
 | **Payments**  | Cashfree Payment Gateway                                                                                      |
 | **Services**  | GoFile (for temporary invoice hosting)                                                                        |
-| **Deployment**| Render (with GitHub Actions for keep-alive)                                                                   |
+| **Deployment**| Render                                                                |
 
 ## System Architecture
 
