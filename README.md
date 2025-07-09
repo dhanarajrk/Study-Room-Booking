@@ -1,5 +1,4 @@
 # Study Room Booking System
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/dhanarajrk/Study-Room-Booking)
 
 This is a full-stack MERN application for booking study tables in a library. It features real-time table availability, online payment integration, PDF invoice generation, and a comprehensive admin dashboard with live metrics. The system uses WebSockets to ensure all users have a synchronized view of table statuses.
 
@@ -91,7 +90,7 @@ The application is built with a decoupled client-server architecture.
     FRONTEND_URL=your_production_frontend_url # For deployment
     ```
 
-4.  **Seed the database with tables** (optional, but recommended):
+4.  **Seed the database with tables** (run this once to create 30 tables, you can edit the numbers to your liking):
     ```bash
     node seedTables.js
     ```
