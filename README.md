@@ -1,9 +1,10 @@
 # Study Room Booking System
 
 This is a full-stack MERN application for booking study tables in a library. It features real-time table availability, online payment integration, PDF invoice generation, and a comprehensive admin dashboard with live metrics. The system uses WebSockets to ensure all users have a synchronized view of table statuses.
+---
+---
 Live Link: https://study-room-booking.onrender.com/
 ---
-
 ## 🚀 Features
 
 - **User Authentication**: Secure registration and login with OTP email verification and JWT-based sessions.
